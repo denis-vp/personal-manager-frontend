@@ -20,8 +20,6 @@ import Typography from "@mui/material/Typography/Typography";
 import { deepPurple } from "@mui/material/colors";
 import { useNavigate, useLocation } from "react-router-dom";
 
-const drawerWidth = 240;
-
 const drawerItems1 = [
   {
     text: "Dashboard",
@@ -80,7 +78,11 @@ const activeStyle = {
   bgcolor: "primary.main",
 };
 
-function SideDrawer() {
+type SideDrawerProps = {
+  drawerWidth: number;
+}
+
+function SideDrawer({drawerWidth} : SideDrawerProps) {
   const navigate = useNavigate();
   const location = useLocation();
 
