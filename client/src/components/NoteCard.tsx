@@ -9,8 +9,8 @@ import Typography from "@mui/material/Typography/Typography";
 import { useTheme } from "@mui/material/styles";
 
 type NoteCardProps = {
-  note: Note;
-  selected: boolean;
+  note: Note,
+  selected: boolean,
 };
 
 function NoteCard({ note, selected }: NoteCardProps) {
