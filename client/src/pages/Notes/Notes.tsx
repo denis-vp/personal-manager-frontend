@@ -1,6 +1,7 @@
-import { useNoteStore } from '../state/noteStore';
-import NoteCard from '../components/NoteCard';
+import { useNoteStore } from '../../state/noteStore';
+import NoteCard from '../../components/NoteCard';
 import Masonry from 'react-masonry-css';
+import styles from './Notes.module.css'
 
 function Notes() {
   const {notes, createNote, updateNote, deleteNote} = useNoteStore();
@@ -8,8 +9,8 @@ function Notes() {
   return <>
     <Masonry
       breakpointCols={{default: 3, 1100: 2, 700: 1}}
-      className="my-masonry-grid"
-      columnClassName="my-masonry-grid_column"
+      className={styles.myMasonryGrid}
+      columnClassName={styles.myMasonryGridColumn}
     >
       {notes.map((note) => (
         <div key={note.id}>

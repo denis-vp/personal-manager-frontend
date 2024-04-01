@@ -2,7 +2,7 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Dashboard from "./pages/Dashboard";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import Layout from "./components/Layout";
-import Notes from "./pages/Notes";
+import Notes from "./pages/Notes/Notes";
 import Tasks from "./pages/Tasks";
 import Expenses from "./pages/Expenses";
 import Events from "./pages/Events";
