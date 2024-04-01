@@ -1,5 +1,5 @@
 import Card from "@mui/material/Card/Card";
-import { Note } from "../state/noteStore";
+import { Note, useNoteStore } from "../state/noteStore";
 import IconButton from "@mui/material/IconButton/IconButton";
 import CardHeader from "@mui/material/CardHeader/CardHeader";
 import { DeleteOutline } from "@mui/icons-material";
@@ -9,10 +9,11 @@ import Typography from "@mui/material/Typography/Typography";
 
 type NoteCardProps = {
   note: Note;
-  deleteNote: (id: string) => void;
 };
 
-function NoteCard({ note, deleteNote }: NoteCardProps) {
+function NoteCard({ note}: NoteCardProps) {
+  const {deleteNote} = useNoteStore();
+
   return (
     <>
       <Card elevation={2}>

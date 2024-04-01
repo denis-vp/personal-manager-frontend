@@ -2,7 +2,7 @@ import { create } from "zustand"
 import { v4 as uuidv4 } from 'uuid';
 import { loremIpsum } from 'lorem-ipsum';
 
-const placeholderNotes: Note[] = Array.from({ length: 10 }, (_, i) => ({
+const placeholderNotes: Note[] = Array.from({ length: 20 }, (_, i) => ({
     id: uuidv4(),
     title: `Note ${i + 1}`,
     category: "todos",

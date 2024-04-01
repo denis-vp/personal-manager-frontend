@@ -4,7 +4,7 @@ import Masonry from 'react-masonry-css';
 import styles from './Notes.module.css'
 
 function Notes() {
-  const {notes, createNote, updateNote, deleteNote} = useNoteStore();
+  const {notes} = useNoteStore();
 
   return <>
     <Masonry
@@ -16,7 +16,6 @@ function Notes() {
         <div key={note.id}>
           <NoteCard
             note={note}
-            deleteNote={deleteNote}
           />
         </div>
       
