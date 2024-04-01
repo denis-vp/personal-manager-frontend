@@ -109,13 +109,13 @@ function SideDrawer({drawerWidth} : SideDrawerProps) {
           position: "sticky",
           top: 0,
           zIndex: 1,
+          borderBottom: 1,
+          borderColor: "divider",
         }}
       >
         <Avatar sx={{ bgcolor: deepPurple[500] }}>DP</Avatar>
         <Typography variant="h5">Denis Pop</Typography>
       </Stack>
-
-      <Divider />
 
       <List>
         {drawerItems1.map((item) => (

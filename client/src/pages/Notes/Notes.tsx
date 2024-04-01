@@ -4,9 +4,11 @@ import Masonry from "react-masonry-css";
 import styles from "./Notes.module.css";
 import Fab from "@mui/material/Fab/Fab";
 import AddIcon from "@mui/icons-material/Add";
+import { useState } from "react";
 
 function Notes() {
   const { notes } = useNoteStore();
+  const [selectedNoteId, setSelectedNoteId] = useState("");
 
   return (
     <>
@@ -16,8 +18,11 @@ function Notes() {
         columnClassName={styles.myMasonryGridColumn}
       >
         {notes.map((note) => (
-          <div key={note.id}>
-            <NoteCard note={note} />
+          <div
+            key={note.id}
+            onClick={() => setSelectedNoteId(note.id)}
+          >
+            <NoteCard note={note} selected={selectedNoteId === note.id} />
           </div>
         ))}
       </Masonry>

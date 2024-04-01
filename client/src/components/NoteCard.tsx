@@ -6,17 +6,24 @@ import { DeleteOutline } from "@mui/icons-material";
 import EditIcon from "@mui/icons-material/Edit";
 import CardContent from "@mui/material/CardContent/CardContent";
 import Typography from "@mui/material/Typography/Typography";
+import { useTheme } from "@mui/material/styles";
 
 type NoteCardProps = {
   note: Note;
+  selected: boolean;
 };
 
-function NoteCard({ note}: NoteCardProps) {
-  const {deleteNote} = useNoteStore();
+function NoteCard({ note, selected }: NoteCardProps) {
+  const { deleteNote } = useNoteStore();
+  const theme = useTheme();
 
   return (
     <>
-      <Card elevation={2}>
+      <Card elevation={2} sx={{
+        borderColor: selected ? theme.palette.primary.main : "transparent",
+        borderWidth: 2,
+        borderStyle: "solid",
+      }}>
         <CardHeader
           action={
             <>
