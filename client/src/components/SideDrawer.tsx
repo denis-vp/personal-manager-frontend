@@ -11,57 +11,79 @@ import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import BarChartIcon from "@mui/icons-material/BarChart";
 import SettingsIcon from "@mui/icons-material/Settings";
 import NotesIcon from "@mui/icons-material/Notes";
-import CreateIcon from "@mui/icons-material/Create";
+import EventIcon from '@mui/icons-material/Event';
+import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import TaskAltIcon from "@mui/icons-material/TaskAlt";
 import Stack from "@mui/material/Stack/Stack";
 import Avatar from "@mui/material/Avatar/Avatar";
 import Typography from "@mui/material/Typography/Typography";
 import { deepPurple } from "@mui/material/colors";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const drawerWidth = 240;
 
-const drawerButtons1 = [
+const drawerItems1 = [
   {
     text: "Dashboard",
     icon: <DashboardIcon />,
+    path: "/",
   },
   {
     text: "Tasks",
     icon: <TaskAltIcon />,
+    path: "/tasks",
   },
   {
     text: "Notes",
     icon: <NotesIcon />,
+    path: "/notes",
   },
   {
-    text: "Create",
-    icon: <CreateIcon />,
+    text: "Expenses",
+    icon: <AttachMoneyIcon />,
+    path: "/expenses",
+  },
+  {
+    text: "Events",
+    icon: <EventIcon />,
+    path: "/events",
   },
 ];
 
-const drawerButtons2 = [
+const drawerItems2 = [
   {
     text: "Calendar",
     icon: <CalendarMonthIcon />,
+    path: "/calendar",
   },
   {
     text: "Clock",
     icon: <AccessTimeIcon />,
+    path: "/clock",
   },
   {
     text: "Statistics",
     icon: <BarChartIcon />,
+    path: "/statistics",
   },
 ];
 
-const drawerButtons3 = [
+const drawerItems3 = [
   {
     text: "Settings",
     icon: <SettingsIcon />,
+    path: "/settings",
   },
 ];
 
+const activeStyle = {
+  bgcolor: "primary.main",
+};
+
 function SideDrawer() {
+  const navigate = useNavigate();
+  const location = useLocation();
+
   return (
     <Drawer
       sx={{
@@ -75,7 +97,18 @@ function SideDrawer() {
       variant="permanent"
       anchor="left"
     >
-      <Stack direction="row" spacing={2} alignItems="center" sx={{ margin: 1 }}>
+      <Stack
+        direction="row"
+        spacing={2}
+        alignItems="center"
+        sx={{
+          padding: 1,
+          bgcolor: "white",
+          position: "sticky",
+          top: 0,
+          zIndex: 1,
+        }}
+      >
         <Avatar sx={{ bgcolor: deepPurple[500] }}>DP</Avatar>
         <Typography variant="h5">Denis Pop</Typography>
       </Stack>
@@ -83,11 +116,15 @@ function SideDrawer() {
       <Divider />
 
       <List>
-        {drawerButtons1.map((button) => (
-          <ListItem key={button.text} disablePadding>
-            <ListItemButton>
-              <ListItemIcon>{button.icon}</ListItemIcon>
-              <ListItemText primary={button.text} />
+        {drawerItems1.map((item) => (
+          <ListItem
+            key={item.text}
+            disablePadding
+            sx={location.pathname === item.path ? activeStyle : null}
+          >
+            <ListItemButton onClick={() => navigate(item.path)}>
+              <ListItemIcon>{item.icon}</ListItemIcon>
+              <ListItemText primary={item.text} />
             </ListItemButton>
           </ListItem>
         ))}
@@ -96,11 +133,16 @@ function SideDrawer() {
       <Divider />
 
       <List>
-        {drawerButtons2.map((button) => (
-          <ListItem key={button.text} disablePadding>
-            <ListItemButton>
-              <ListItemIcon>{button.icon}</ListItemIcon>
-              <ListItemText primary={button.text} />
+        {drawerItems2.map((item) => (
+          <ListItem
+            key={item.text}
+            disablePadding
+            sx={location.pathname === item.path ? activeStyle : null}
+            disabled
+          >
+            <ListItemButton onClick={() => null}>
+              <ListItemIcon>{item.icon}</ListItemIcon>
+              <ListItemText primary={item.text} />
             </ListItemButton>
           </ListItem>
         ))}
@@ -109,11 +151,16 @@ function SideDrawer() {
       <Divider />
 
       <List>
-        {drawerButtons3.map((button) => (
-          <ListItem key={button.text} disablePadding>
-            <ListItemButton>
-              <ListItemIcon>{button.icon}</ListItemIcon>
-              <ListItemText primary={button.text} />
+        {drawerItems3.map((item) => (
+          <ListItem
+            key={item.text}
+            disablePadding
+            sx={location.pathname === item.path ? activeStyle : null}
+            disabled
+          >
+            <ListItemButton onClick={() => null}>
+              <ListItemIcon>{item.icon}</ListItemIcon>
+              <ListItemText primary={item.text} />
             </ListItemButton>
           </ListItem>
         ))}
