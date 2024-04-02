@@ -9,25 +9,29 @@ import Typography from "@mui/material/Typography/Typography";
 import { useTheme } from "@mui/material/styles";
 
 type NoteCardProps = {
-  note: Note,
-  selected: boolean,
+  note: Note;
+  selected: boolean;
+  onEdit: () => void;
 };
 
-function NoteCard({ note, selected }: NoteCardProps) {
+function NoteCard({ note, selected, onEdit }: NoteCardProps) {
   const { deleteNote } = useNoteStore();
   const theme = useTheme();
 
   return (
     <>
-      <Card elevation={2} sx={{
-        borderColor: selected ? theme.palette.primary.main : "transparent",
-        borderWidth: 2,
-        borderStyle: "solid",
-      }}>
+      <Card
+        elevation={2}
+        sx={{
+          borderColor: selected ? theme.palette.primary.main : "transparent",
+          borderWidth: 2,
+          borderStyle: "solid",
+        }}
+      >
         <CardHeader
           action={
             <>
-              <IconButton>
+              <IconButton onClick={onEdit}>
                 <EditIcon />
               </IconButton>
               <IconButton onClick={() => deleteNote(note.id)}>

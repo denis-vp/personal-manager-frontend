@@ -7,16 +7,17 @@ import { useState } from "react";
 import NoteForm from "../components/NoteForm";
 
 function Notes() {
-  const { notes, createNote } = useNoteStore();
+  const { notes, createNote, updateNote } = useNoteStore();
   const [selectedNoteId, setSelectedNoteId] = useState("");
-  const [open, setOpen] = useState(false);
+  const [openCreate, setOpenCreate] = useState(false);
+  const [openUpdate, setOpenUpdate] = useState(false);
 
   return (
     <>
       <Masonry columns={3} spacing={3} sx={{margin: 0, padding: 0}}>
         {notes.map((note) => (
           <div key={note.id} onClick={() => setSelectedNoteId(note.id)}>
-            <NoteCard note={note} selected={selectedNoteId === note.id} />
+            <NoteCard note={note} selected={selectedNoteId === note.id} onEdit={() => setOpenUpdate(true)} />
           </div>
         ))}
       </Masonry>
@@ -25,12 +26,13 @@ function Notes() {
         color="primary"
         aria-label="add"
         sx={{ position: "fixed", right: 16, bottom: 16 }}
-        onClick={() => setOpen(true)}
+        onClick={() => setOpenCreate(true)}
       >
         <AddIcon />
       </Fab>
 
-      <NoteForm open={open} setOpen={setOpen} confirmText="Add" onConfirm={createNote} />
+      <NoteForm text="Add note" confirmText="Add" open={openCreate} setOpen={setOpenCreate} onConfirm={createNote} />
+      <NoteForm text="Edit note" confirmText="Edit" open={openUpdate} setOpen={setOpenUpdate} onConfirm={updateNote} note={notes.filter((n) => n.id === selectedNoteId)[0]} />
     </>
   );
 }

@@ -4,28 +4,42 @@ import DialogActions from "@mui/material/DialogActions/DialogActions";
 import DialogContent from "@mui/material/DialogContent/DialogContent";
 import DialogTitle from "@mui/material/DialogTitle/DialogTitle";
 import TextField from "@mui/material/TextField/TextField";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Note } from "../state/noteStore";
 import { v4 as uuidv4 } from "uuid";
 
 type NoteFormProps = {
+  text: string;
+  confirmText: string;
   open: boolean;
   setOpen: (open: boolean) => void;
-  confirmText: string;
   onConfirm: (note: Note) => void;
   note?: Note;
 };
 
 function NoteForm({
+  text,
+  confirmText,
   open,
   setOpen,
-  confirmText,
   onConfirm,
   note,
 }: NoteFormProps) {
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState("");
   const [content, setContent] = useState("");
+
+  useEffect(() => {
+    if (note) {
+      setTitle(note.title);
+      setCategory(note.category);
+      setContent(note.content);
+    } else {
+      setTitle("");
+      setCategory("");
+      setContent("");
+    }
+  }, [note]);
 
   const handleOnConfirm = (
     title: string,
@@ -49,7 +63,7 @@ function NoteForm({
 
   return (
     <Dialog open={open} onClose={() => setOpen(false)}>
-      <DialogTitle>Add a new note</DialogTitle>
+      <DialogTitle>{text}</DialogTitle>
       <form
         onSubmit={(e) => {
           e.preventDefault();
