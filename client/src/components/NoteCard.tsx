@@ -12,9 +12,10 @@ type NoteCardProps = {
   note: Note;
   selected: boolean;
   onEdit: () => void;
+  onDelete: () => void;
 };
 
-function NoteCard({ note, selected, onEdit }: NoteCardProps) {
+function NoteCard({ note, selected, onEdit, onDelete }: NoteCardProps) {
   const { deleteNote } = useNoteStore();
   const theme = useTheme();
 
@@ -34,7 +35,12 @@ function NoteCard({ note, selected, onEdit }: NoteCardProps) {
               <IconButton onClick={onEdit}>
                 <EditIcon />
               </IconButton>
-              <IconButton onClick={() => deleteNote(note.id)}>
+              <IconButton
+                onClick={() => {
+                  onDelete();
+                  deleteNote(note.id);
+                }}
+              >
                 <DeleteOutline />
               </IconButton>
             </>

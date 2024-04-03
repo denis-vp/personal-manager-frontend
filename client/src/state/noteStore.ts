@@ -27,7 +27,7 @@ export const useNoteStore = create<NoteStore>((set) => ({
         set((state) => ({ notes: [...state.notes, response.data] }));
       })
       .catch((error) => {
-        console.error(error);
+        window.alert(`An error occurred: ${error.message}`);
       });
   },
   updateNote: (note: Note) => {
@@ -39,7 +39,7 @@ export const useNoteStore = create<NoteStore>((set) => ({
         }));
       })
       .catch((error) => {
-        console.error(error);
+        window.alert(`An error occurred: ${error.message}`);
       });
   },
   deleteNote: (id: string) => {
@@ -49,7 +49,7 @@ export const useNoteStore = create<NoteStore>((set) => ({
         set((state) => ({ notes: state.notes.filter((n) => n.id !== id) }));
       })
       .catch((error) => {
-        console.error(error);
+        window.alert(`An error occurred: ${error.message}`);
       });
   },
 }));

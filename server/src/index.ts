@@ -75,11 +75,12 @@ app.delete("/notes/:id", (req: Request, res: Response) => {
 
   if (noteIndex !== -1) {
     notes.splice(noteIndex, 1);
-    res.json({ message: "Note deleted" });
     res.status(204);
   } else {
     res.status(404).json({ message: "Note not found" });
   }
+  
+  res.send();
 });
 
 const server = app.listen(port, () => {
