@@ -82,10 +82,10 @@ app.delete("/notes/:id", (req: Request, res: Response) => {
   }
 });
 
-app.listen(port, () => {
+const server = app.listen(port, () => {
   console.group();
   console.log(`Server started at port ${port}`);
   console.groupEnd();
 });
 
-export default app;
+export default server;
