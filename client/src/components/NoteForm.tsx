@@ -6,7 +6,6 @@ import DialogTitle from "@mui/material/DialogTitle/DialogTitle";
 import TextField from "@mui/material/TextField/TextField";
 import { useEffect, useState } from "react";
 import { Note } from "../state/noteStore";
-import { v4 as uuidv4 } from "uuid";
 
 type NoteFormProps = {
   text: string;
@@ -47,7 +46,7 @@ function NoteForm({
     content: string
   ) => {
     const newNote: Note = {
-      id: note?.id || uuidv4(),
+      id: note?.id || "",
       title,
       category,
       content,
@@ -67,7 +66,7 @@ function NoteForm({
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          if (title && category && content) {
+          if (title && content) {
             setOpen(false);
             handleOnConfirm(title, category, content);
           }
