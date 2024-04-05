@@ -11,9 +11,9 @@ app.use(cors());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-const port = process.env.PORT;
+const port = process.env.NODE_ENV === "test" ? 0 : process.env.PORT;
 
-type Note = {
+export type Note = {
   id: string;
   title: string;
   category: string;
@@ -31,20 +31,27 @@ const placeholderNotes: Note[] = Array.from({ length: 20 }, (_, i) => ({
   }),
   date: new Date().toISOString().slice(0, 10),
 }));
+placeholderNotes.push({
+  id: "1",
+  title: "A Note",
+  category: "todos",
+  content: "This is a note",
+  date: new Date().toISOString().slice(0, 10),
+})
 
-let notes: Note[] = placeholderNotes;
+export let notes: Note[] = placeholderNotes;
 
 app.get("/notes", (req: Request, res: Response) => {
-  res.json(notes);
   res.status(200);
+  res.json(notes);
 });
 
 app.get("/notes/:id", (req: Request, res: Response) => {
   const note = notes.find((n) => n.id === req.params.id);
 
   if (note) {
-    res.json(note);
     res.status(200);
+    res.json(note);
   } else {
     res.status(404).json({ message: "Note not found" });
   }
@@ -54,8 +61,8 @@ app.post("/notes/create", (req: Request, res: Response) => {
   const note: Note = req.body;
   note.id = uuidv4();
   notes.push(note);
-  res.json(note);
   res.status(201);
+  res.json(note);
 });
 
 app.patch("/notes/:id", (req: Request, res: Response) => {
@@ -63,8 +70,8 @@ app.patch("/notes/:id", (req: Request, res: Response) => {
 
   if (noteIndex !== -1) {
     notes[noteIndex] = req.body;
-    res.json(notes[noteIndex])
     res.status(200);
+    res.json(notes[noteIndex])
   } else {
     res.status(404).json({ message: "Note not found" });
   }
