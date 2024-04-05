@@ -32,7 +32,7 @@ const placeholderNotes: Note[] = Array.from({ length: 20 }, (_, i) => ({
   date: new Date().toISOString().slice(0, 10),
 }));
 
-const notes: Note[] = placeholderNotes;
+let notes: Note[] = placeholderNotes;
 
 app.get("/notes", (req: Request, res: Response) => {
   res.json(notes);
@@ -50,7 +50,7 @@ app.get("/notes/:id", (req: Request, res: Response) => {
   }
 });
 
-app.post("/notes", (req: Request, res: Response) => {
+app.post("/notes/create", (req: Request, res: Response) => {
   const note: Note = req.body;
   note.id = uuidv4();
   notes.push(note);

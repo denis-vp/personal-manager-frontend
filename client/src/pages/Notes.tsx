@@ -66,7 +66,7 @@ function Notes() {
         note={notes.filter((n) => n.id === selectedNoteId)[0]}
       />
 
-      <AlertSnackBar open={openAlert} setOpen={setOpenAlert} text={alertText}/>
+      <AlertSnackBar open={openAlert} setOpen={setOpenAlert} text={alertText} />
     </>
   );
 }
