@@ -3,6 +3,9 @@ import dotenv from "dotenv";
 import { v4 as uuidv4 } from "uuid";
 import { loremIpsum } from "lorem-ipsum";
 import cors from "cors";
+import { noteGenerator } from "./cronjob";
+import "./socket";
+import { validateNote } from "./noteValidator"
 
 dotenv.config();
 
@@ -31,15 +34,10 @@ const placeholderNotes: Note[] = Array.from({ length: 20 }, (_, i) => ({
   }),
   date: new Date().toISOString().slice(0, 10),
 }));
-placeholderNotes.push({
-  id: "1",
-  title: "A Note",
-  category: "todos",
-  content: "This is a note",
-  date: new Date().toISOString().slice(0, 10),
-})
 
 export let notes: Note[] = placeholderNotes;
+
+noteGenerator();
 
 app.get("/notes", (req: Request, res: Response) => {
   res.status(200);
@@ -59,6 +57,10 @@ app.get("/notes/:id", (req: Request, res: Response) => {
 
 app.post("/notes/create", (req: Request, res: Response) => {
   const note: Note = req.body;
+  if (!validateNote(note)) {
+    res.status(400).json({ message: "Invalid note" });
+    return;
+  }
   note.id = uuidv4();
   notes.push(note);
   res.status(201);
@@ -67,9 +69,13 @@ app.post("/notes/create", (req: Request, res: Response) => {
 
 app.patch("/notes/:id", (req: Request, res: Response) => {
   const noteIndex = notes.findIndex((n) => n.id === req.params.id);
-
   if (noteIndex !== -1) {
-    notes[noteIndex] = req.body;
+    const note: Note = req.body;
+    notes[noteIndex] = note;
+    if (!validateNote(note)) {
+      res.status(400).json({ message: "Invalid note" });
+      return;
+    }
     res.status(200);
     res.json(notes[noteIndex])
   } else {
@@ -86,7 +92,7 @@ app.delete("/notes/:id", (req: Request, res: Response) => {
   } else {
     res.status(404).json({ message: "Note not found" });
   }
-  
+
   res.send();
 });
 

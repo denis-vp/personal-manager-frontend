@@ -1,5 +1,5 @@
 import request from "supertest";
-import server, { Note, notes } from "../src/index.ts";
+import server, { Note, notes } from "../index.ts";
 import { beforeAll, afterAll, test, describe, expect } from "@jest/globals";
 
 const note: Note = {
@@ -23,30 +23,31 @@ afterAll(() => {
   server.close();
 });
 
-describe("Test to update notes", () => {
-  const newNote: Note = {
-    id: "testId",
-    title: "An Updated Note",
-    category: "todos",
-    content: "This is an updated note",
-    date: new Date().toISOString().slice(0, 10),
-  };
-
-  test("It should respond with the PATCH method on a note", (done) => {
+describe("Test get all notes", () => {
+  test("It should respond with the GET method on all notes", (done) => {
     request(server)
-      .patch("/notes/testId")
-      .send(newNote)
+      .get("/notes")
       .then((response) => {
         expect(response.statusCode).toBe(200);
-        expect(response.body).toStrictEqual(newNote);
+        expect(response.body).toBeInstanceOf(Array);
         done();
       });
   });
+});
 
-  test("It should respond with the PATCH method on a note that does not exist", (done) => {
+describe("Test get specific note", () => {
+  test("It should respond with the GET method on a specific note", (done) => {
     request(server)
-      .patch("/notes/wrongId")
-      .send(newNote)
+      .get("/notes/testId")
+      .then((response) => {
+        expect(response.statusCode).toBe(200);
+        expect(response.body).toStrictEqual(note);
+        done();
+      });
+  });
+  test("It should respond with the GET method on a specific note that does not exist", (done) => {
+    request(server)
+      .get("/notes/wrongId")
       .then((response) => {
         expect(response.statusCode).toBe(404);
         expect(response.body).toStrictEqual({ message: "Note not found" });

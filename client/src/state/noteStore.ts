@@ -13,49 +13,59 @@ export type Note = {
 
 type NoteStore = {
   notes: Note[];
+  openAlert: boolean;
+  alertText: string;
   setNotes: (notes: Note[]) => void;
   createNote: (note: Note) => void;
   updateNote: (note: Note) => void;
   deleteNote: (id: string) => void;
+  setOpenAlert: (openAlert: boolean) => void;
+  setAlertText: (alertText: string) => void;
 };
 
 export const useNoteStore = create<NoteStore>()(
-    (set, get) => ({
-      notes: [],
-      setNotes: (notes: Note[]) => set({ notes }),
-      createNote: (note: Note) => {
-        axios
-          .post(server + `/notes/create`, note)
-          .then((response) => {
-            set({ notes: [...get().notes, response.data] });
-          })
-          .catch((error) => {
-            window.alert(`An error occurred: ${error.message}`);
+  (set, get) => ({
+    notes: [],
+    openAlert: false,
+    alertText: "",
+    setNotes: (notes: Note[]) => set({ notes }),
+    createNote: (note: Note) => {
+      axios
+        .post(server + `/notes/create`, note)
+        .then((response) => {
+          set({ notes: [...get().notes, response.data], openAlert: true, alertText: "Note created!" });
+        })
+        .catch((error) => {
+          window.alert(`An error occurred: ${error.message}`);
+        });
+    },
+    updateNote: (note: Note) => {
+      axios
+        .patch(server + `/notes/${note.id}`, note)
+        .then((response) => {
+          set({
+            notes: get().notes.map((n) =>
+              n.id === response.data.id ? note : n
+            ),
+            openAlert: true,
+            alertText: "Note updated!",
           });
-      },
-      updateNote: (note: Note) => {
-        axios
-          .patch(server + `/notes/${note.id}`, note)
-          .then((response) => {
-            set({
-              notes: get().notes.map((n) =>
-                n.id === response.data.id ? note : n
-              ),
-            });
-          })
-          .catch((error) => {
-            window.alert(`An error occurred: ${error.message}`);
-          });
-      },
-      deleteNote: (id: string) => {
-        axios
-          .delete(server + `/notes/${id}`)
-          .then(() => {
-            set({ notes: get().notes.filter((n) => n.id !== id) });
-          })
-          .catch((error) => {
-            window.alert(`An error occurred: ${error.message}`);
-          });
-      },
-    }),
+        })
+        .catch((error) => {
+          window.alert(`An error occurred: ${error.message}`);
+        });
+    },
+    deleteNote: (id: string) => {
+      axios
+        .delete(server + `/notes/${id}`)
+        .then(() => {
+          set({ notes: get().notes.filter((n) => n.id !== id), openAlert: true, alertText: "Note deleted!" });
+        })
+        .catch((error) => {
+          window.alert(`An error occurred: ${error.message}`);
+        });
+    },
+    setOpenAlert: (openAlert: boolean) => set({ openAlert }),
+    setAlertText: (alertText: string) => set({ alertText }),
+  }),
 );

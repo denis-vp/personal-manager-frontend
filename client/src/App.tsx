@@ -7,10 +7,12 @@ import Tasks from "./pages/Tasks";
 import Expenses from "./pages/Expenses";
 import Events from "./pages/Events";
 import { useNoteStore } from "./state/noteStore";
-import { useEffect, useRef } from "react";
+import { useEffect, useState } from "react";
 import axios, { AxiosInstance } from "axios";
+import AlertSnackBar from "./components/AlertSnackBar";
 
 const server = import.meta.env.VITE_SERVER as string;
+const webSocketServer = import.meta.env.VITE_SOCKET_SERVER as string;
 
 const theme = createTheme({});
 
@@ -38,43 +40,48 @@ const router = createBrowserRouter([
 ]);
 
 function App() {
-  const { setNotes } = useNoteStore();
-  const axiosInstance = useRef<AxiosInstance | null>(null);
+  const {
+    openAlert,
+    alertText,
+    setNotes,
+    createNote,
+    setOpenAlert,
+    setAlertText,
+  } = useNoteStore();
 
-  useEffect(() => {
-    if (axiosInstance.current !== null) return;
-    
-    axiosInstance.current = axios.create({ baseURL: server });
-
-    axiosInstance.current.interceptors.response.use(
-      (response) => response,
-      (error) => {
-        if (!error.response) {
-          console.log("Retrying request in 5 seconds...");
-          return new Promise((resolve) => {
-            setTimeout(() => {
-              resolve(axiosInstance.current?.request(error.config));
-            }, 1000 * 5);
-          });
-        }
-
-        return Promise.reject(error);
-      }
-    );
-
-    axiosInstance.current
+  const connect = (axiosInstance: AxiosInstance, ws: WebSocket) => {
+    axiosInstance
       .get(server + "/notes")
       .then((response) => {
         setNotes(response.data);
+
+        ws.onmessage = (event) => {
+          const data = JSON.parse(event.data);
+          createNote(data);
+        };
       })
-      .catch((error) => {
-        console.error(error);
+      .catch(() => {
+        setAlertText(
+          "Could not connect to server. Retrying every 5 seconds..."
+        );
+        setOpenAlert(true);
+
+        setTimeout(() => {
+          connect(axiosInstance, ws);
+        }, 1000 * 5);
       });
+  };
+
+  useEffect(() => {
+    const axiosInstance = axios.create({ baseURL: server });
+    const ws = new WebSocket(webSocketServer);
+    connect(axiosInstance, ws);
   }, []);
 
   return (
     <ThemeProvider theme={theme}>
       <RouterProvider router={router} />
+      <AlertSnackBar open={openAlert} setOpen={setOpenAlert} text={alertText} />
     </ThemeProvider>
   );
 }
