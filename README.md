@@ -20,7 +20,7 @@ Follow these steps to install the project:
 
 To run the frontend, make sure you are in the `client` directory and run `npm run dev` or `yarn dev`.
 
-To run the backend, make sure you are in the `server` directory and run `npm run dev` or `yarn dev`.
+To run the backend, make sure you are in the `server` directory and run `npm run build` and then `npm run dev` or `yarn dev`.
 
 ## Running Tests
 

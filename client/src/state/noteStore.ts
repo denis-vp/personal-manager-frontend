@@ -36,7 +36,7 @@ export const useNoteStore = create<NoteStore>()(
           set({ notes: [...get().notes, response.data], openAlert: true, alertText: "Note created!" });
         })
         .catch((error) => {
-          window.alert(`An error occurred: ${error.message}`);
+          set({openAlert: true, alertText: `An error occurred: ${error.message}`})
         });
     },
     updateNote: (note: Note) => {
@@ -52,7 +52,7 @@ export const useNoteStore = create<NoteStore>()(
           });
         })
         .catch((error) => {
-          window.alert(`An error occurred: ${error.message}`);
+          set({openAlert: true, alertText: `An error occurred: ${error.message}`})
         });
     },
     deleteNote: (id: string) => {
@@ -62,7 +62,7 @@ export const useNoteStore = create<NoteStore>()(
           set({ notes: get().notes.filter((n) => n.id !== id), openAlert: true, alertText: "Note deleted!" });
         })
         .catch((error) => {
-          window.alert(`An error occurred: ${error.message}`);
+          set({openAlert: true, alertText: `An error occurred: ${error.message}`})
         });
     },
     setOpenAlert: (openAlert: boolean) => set({ openAlert }),

@@ -11,6 +11,7 @@ const lorem_ipsum_1 = require("lorem-ipsum");
 const cors_1 = __importDefault(require("cors"));
 const cronjob_1 = require("./cronjob");
 require("./socket");
+const noteValidator_1 = require("./noteValidator");
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 app.use((0, cors_1.default)());
@@ -45,6 +46,10 @@ app.get("/notes/:id", (req, res) => {
 });
 app.post("/notes/create", (req, res) => {
     const note = req.body;
+    if (!(0, noteValidator_1.validateNote)(note)) {
+        res.status(400).json({ message: "Invalid note" });
+        return;
+    }
     note.id = (0, uuid_1.v4)();
     exports.notes.push(note);
     res.status(201);
@@ -53,7 +58,12 @@ app.post("/notes/create", (req, res) => {
 app.patch("/notes/:id", (req, res) => {
     const noteIndex = exports.notes.findIndex((n) => n.id === req.params.id);
     if (noteIndex !== -1) {
-        exports.notes[noteIndex] = req.body;
+        const note = req.body;
+        exports.notes[noteIndex] = note;
+        if (!(0, noteValidator_1.validateNote)(note)) {
+            res.status(400).json({ message: "Invalid note" });
+            return;
+        }
         res.status(200);
         res.json(exports.notes[noteIndex]);
     }
