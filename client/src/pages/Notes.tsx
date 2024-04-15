@@ -3,18 +3,22 @@ import NoteCard from "../components/NoteCard";
 import Masonry from "@mui/lab/Masonry";
 import Fab from "@mui/material/Fab/Fab";
 import AddIcon from "@mui/icons-material/Add";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import NoteForm from "../components/NoteForm";
 import { apiPatchNote, apiPostNote } from "../utils/apiCalls";
 import { useSnackBarStore } from "../state/snackBarStore";
 import { validateNote } from "../validators/noteValidator";
 
 function Notes() {
-  const { getNotes, createNote, updateNote, setDirty } = useNoteStore();
+  const { loadNotes, getNotes, createNote, updateNote, setDirty } = useNoteStore();
   const { setOpenAlert, setAlertText } = useSnackBarStore();
   const [selectedNoteId, setSelectedNoteId] = useState("");
   const [openCreate, setOpenCreate] = useState(false);
   const [openUpdate, setOpenUpdate] = useState(false);
+
+  useEffect(() => {
+    loadNotes(3, 5, setOpenAlert, setAlertText);
+  }, []);
 
   const createNoteLocal = (note: Note) => {
     apiPostNote(note)

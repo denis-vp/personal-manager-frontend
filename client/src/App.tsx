@@ -8,8 +8,6 @@ import Expenses from "./pages/Expenses";
 import Events from "./pages/Events";
 import AlertSnackBar from "./components/AlertSnackBar";
 import { useSnackBarStore } from "./state/snackBarStore";
-import { useNoteStore } from "./state/noteStore";
-import { useEffect } from "react";
 
 const theme = createTheme({});
 
@@ -36,13 +34,10 @@ const router = createBrowserRouter([
   },
 ]);
 
-function App() {
-  const { loadData } = useNoteStore();
-  const { openAlert, alertText, setOpenAlert, setAlertText } = useSnackBarStore();
+// TODO: use web sockets
 
-  useEffect(() => {
-    loadData(3, 5, setOpenAlert, setAlertText);
-  }, []);
+function App() {
+  const { openAlert, alertText, setOpenAlert } = useSnackBarStore();
 
   return (
     <ThemeProvider theme={theme}>
