@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from "uuid";
 import { loremIpsum } from "lorem-ipsum";
 import cors from "cors";
 import { noteGenerator } from "./cronjob";
-import "./socket";
+// import "./socket";
 import { validateNote } from "./noteValidator"
 
 dotenv.config();
@@ -37,7 +37,7 @@ const placeholderNotes: Note[] = Array.from({ length: 20 }, (_, i) => ({
 
 export let notes: Note[] = placeholderNotes;
 
-noteGenerator();
+// noteGenerator();
 
 app.get("/notes", (req: Request, res: Response) => {
   res.status(200);

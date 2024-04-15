@@ -9,8 +9,7 @@ const dotenv_1 = __importDefault(require("dotenv"));
 const uuid_1 = require("uuid");
 const lorem_ipsum_1 = require("lorem-ipsum");
 const cors_1 = __importDefault(require("cors"));
-const cronjob_1 = require("./cronjob");
-require("./socket");
+// import "./socket";
 const noteValidator_1 = require("./noteValidator");
 dotenv_1.default.config();
 const app = (0, express_1.default)();
@@ -29,7 +28,7 @@ const placeholderNotes = Array.from({ length: 20 }, (_, i) => ({
     date: new Date().toISOString().slice(0, 10),
 }));
 exports.notes = placeholderNotes;
-(0, cronjob_1.noteGenerator)();
+// noteGenerator();
 app.get("/notes", (req, res) => {
     res.status(200);
     res.json(exports.notes);

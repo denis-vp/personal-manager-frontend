@@ -6,6 +6,7 @@ import DialogTitle from "@mui/material/DialogTitle/DialogTitle";
 import TextField from "@mui/material/TextField/TextField";
 import { useEffect, useState } from "react";
 import { Note } from "../state/noteStore";
+import { v4 as uuidv4 } from "uuid";
 
 type NoteFormProps = {
   text: string;
@@ -46,7 +47,7 @@ function NoteForm({
     content: string
   ) => {
     const newNote: Note = {
-      id: note?.id || "",
+      id: note?.id || uuidv4(),
       title,
       category,
       content,

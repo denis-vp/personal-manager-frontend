@@ -1,7 +1,7 @@
 import { create } from "zustand";
-import axios from "axios";
+import { apiGetNotes } from "../utils/apiCalls";
 
-const server = import.meta.env.VITE_SERVER as string;
+const localStorageName = "notes";
 
 export type Note = {
   id: string;
@@ -13,59 +13,64 @@ export type Note = {
 
 type NoteStore = {
   notes: Note[];
-  openAlert: boolean;
-  alertText: string;
+  dirty: boolean;
+  loadData: (numTries: number, waitTime: number, setOpenAlert: (open: boolean) => void, setAlertText: (text: string) => void) => void;
+  getNotes: () => Note[];
+  getNote: (id: string) => Note | undefined;
   setNotes: (notes: Note[]) => void;
   createNote: (note: Note) => void;
   updateNote: (note: Note) => void;
   deleteNote: (id: string) => void;
-  setOpenAlert: (openAlert: boolean) => void;
-  setAlertText: (alertText: string) => void;
+  setDirty: (dirty: boolean) => void;
 };
 
 export const useNoteStore = create<NoteStore>()(
   (set, get) => ({
     notes: [],
-    openAlert: false,
-    alertText: "",
+    dirty: false,
+    loadData: (numTries: number, waitTime: number, setOpenAlert: (open: boolean) => void, setAlertText: (text: string) => void) => {
+      apiGetNotes().then((response) => {
+        set({ notes: response.data });
+        localStorage.setItem(localStorageName, JSON.stringify(response.data));
+      }).catch((error) => {
+        if (numTries > 0) {
+          setAlertText(`Cannot connect to server, retrying in ${waitTime} seconds...`);
+          setOpenAlert(true);
+          setTimeout(() => get().loadData(numTries - 1, waitTime, setOpenAlert, setAlertText), 1000 * waitTime);
+          return;
+        }
+        if (!error.response) {
+          setAlertText("Cannot connect to server, using local storage");
+          setOpenAlert(true);
+          const localData = localStorage.getItem(localStorageName);
+          set({ notes: localData ? JSON.parse(localData) : [] });
+        }
+      });
+    },
+    getNotes: () => get().notes,
+    getNote: (id: string) => get().notes.find((n) => n.id === id),
     setNotes: (notes: Note[]) => set({ notes }),
     createNote: (note: Note) => {
-      axios
-        .post(server + `/notes/create`, note)
-        .then((response) => {
-          set({ notes: [...get().notes, response.data], openAlert: true, alertText: "Note created!" });
-        })
-        .catch((error) => {
-          set({openAlert: true, alertText: `An error occurred: ${error.message}`})
-        });
+      set({ notes: [...get().notes, note] });
+      localStorage.setItem(localStorageName, JSON.stringify(get().notes));
     },
     updateNote: (note: Note) => {
-      axios
-        .patch(server + `/notes/${note.id}`, note)
-        .then((response) => {
-          set({
-            notes: get().notes.map((n) =>
-              n.id === response.data.id ? note : n
-            ),
-            openAlert: true,
-            alertText: "Note updated!",
-          });
-        })
-        .catch((error) => {
-          set({openAlert: true, alertText: `An error occurred: ${error.message}`})
-        });
+      set({
+        notes: get().notes.map((n) => (n.id === note.id ? note : n)),
+      });
+      localStorage.setItem(localStorageName, JSON.stringify(get().notes));
     },
     deleteNote: (id: string) => {
-      axios
-        .delete(server + `/notes/${id}`)
-        .then(() => {
-          set({ notes: get().notes.filter((n) => n.id !== id), openAlert: true, alertText: "Note deleted!" });
-        })
-        .catch((error) => {
-          set({openAlert: true, alertText: `An error occurred: ${error.message}`})
-        });
+      set({ notes: get().notes.filter((n) => n.id !== id) });
+      localStorage.setItem(localStorageName, JSON.stringify(get().notes));
     },
-    setOpenAlert: (openAlert: boolean) => set({ openAlert }),
-    setAlertText: (alertText: string) => set({ alertText }),
+    setDirty: (dirty: boolean) => {
+      if (get().dirty === false && dirty === true) {
+        set({ dirty: true });
+      } else if (get().dirty === true && dirty === false) {
+        set({ dirty: false });
+        // TODO: Save notes to the server
+      }
+    },
   }),
 );

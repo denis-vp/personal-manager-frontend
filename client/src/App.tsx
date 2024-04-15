@@ -6,13 +6,10 @@ import Notes from "./pages/Notes";
 import Tasks from "./pages/Tasks";
 import Expenses from "./pages/Expenses";
 import Events from "./pages/Events";
+import AlertSnackBar from "./components/AlertSnackBar";
+import { useSnackBarStore } from "./state/snackBarStore";
 import { useNoteStore } from "./state/noteStore";
 import { useEffect } from "react";
-import axios, { AxiosInstance } from "axios";
-import AlertSnackBar from "./components/AlertSnackBar";
-
-const server = import.meta.env.VITE_SERVER as string;
-const webSocketServer = import.meta.env.VITE_SOCKET_SERVER as string;
 
 const theme = createTheme({});
 
@@ -40,46 +37,11 @@ const router = createBrowserRouter([
 ]);
 
 function App() {
-  const {
-    openAlert,
-    alertText,
-    setNotes,
-    createNote,
-    setOpenAlert,
-    setAlertText,
-  } = useNoteStore();
-
-  const connect = (axiosInstance: AxiosInstance, ws: WebSocket, firstTime: boolean, tries: number) => {
-    if (tries === 0) return;
-    
-    axiosInstance
-      .get(server + "/notes")
-      .then((response) => {
-        setNotes(response.data);
-
-        ws.onmessage = (event) => {
-          const data = JSON.parse(event.data);
-          createNote(data);
-        };
-      })
-      .catch(() => {
-        if (firstTime) {
-          setAlertText(
-            "Could not connect to server. Retrying every 5 seconds..."
-          );
-          setOpenAlert(true);
-        }
-
-        setTimeout(() => {
-          connect(axiosInstance, ws, false, tries - 1);
-        }, 1000 * 5);
-      });
-  };
+  const { loadData } = useNoteStore();
+  const { openAlert, alertText, setOpenAlert, setAlertText } = useSnackBarStore();
 
   useEffect(() => {
-    const axiosInstance = axios.create({ baseURL: server });
-    const ws = new WebSocket(webSocketServer);
-    connect(axiosInstance, ws, true, 3);
+    loadData(3, 5, setOpenAlert, setAlertText);
   }, []);
 
   return (

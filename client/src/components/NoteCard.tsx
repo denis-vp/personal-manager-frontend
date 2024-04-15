@@ -7,6 +7,8 @@ import EditIcon from "@mui/icons-material/Edit";
 import CardContent from "@mui/material/CardContent/CardContent";
 import Typography from "@mui/material/Typography/Typography";
 import { useTheme } from "@mui/material/styles";
+import { useSnackBarStore } from "../state/snackBarStore";
+import { apiDeleteNote } from "../utils/apiCalls";
 
 type NoteCardProps = {
   note: Note;
@@ -15,8 +17,30 @@ type NoteCardProps = {
 };
 
 function NoteCard({ note, selected, onEdit }: NoteCardProps) {
-  const { deleteNote } = useNoteStore();
+  const { deleteNote, setDirty } = useNoteStore();
+  const { setOpenAlert, setAlertText } = useSnackBarStore();
   const theme = useTheme();
+
+  const deleteNoteLocal = (id: string) => {
+    apiDeleteNote(id)
+      .then(() => {
+        setAlertText("Note deleted");
+        setOpenAlert(true);
+        deleteNote(id);
+        setDirty(false);
+      })
+      .catch((error) => {
+        if (!error.response) {
+          setAlertText("Network error");
+          deleteNote(id);
+          setDirty(true);
+        } else if (error.response.status === 404) {
+          setAlertText("Note not found");
+          setDirty(false);
+        }
+        setOpenAlert(true);
+      });
+  };
 
   return (
     <>
@@ -34,9 +58,7 @@ function NoteCard({ note, selected, onEdit }: NoteCardProps) {
               <IconButton onClick={onEdit}>
                 <EditIcon />
               </IconButton>
-              <IconButton
-                onClick={() => deleteNote(note.id)}
-              >
+              <IconButton onClick={() => deleteNoteLocal(note.id)}>
                 <DeleteOutline />
               </IconButton>
             </>
