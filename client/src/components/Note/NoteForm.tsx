@@ -5,8 +5,10 @@ import DialogContent from "@mui/material/DialogContent/DialogContent";
 import DialogTitle from "@mui/material/DialogTitle/DialogTitle";
 import TextField from "@mui/material/TextField/TextField";
 import { useEffect, useState } from "react";
-import { Note } from "../state/noteStore";
+import { Note } from "../../state/noteStore";
 import { v4 as uuidv4 } from "uuid";
+import { validateNote } from "../../validators/noteValidator";
+import { useSnackBarStore } from "../../state/snackBarStore";
 
 type NoteFormProps = {
   text: string;
@@ -28,6 +30,7 @@ function NoteForm({
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState("");
   const [content, setContent] = useState("");
+  const { setOpenAlert, setAlertText } = useSnackBarStore();
 
   useEffect(() => {
     if (note) {
@@ -41,6 +44,13 @@ function NoteForm({
     }
   }, [note]);
 
+  const handleClose = () => {
+    setTitle("");
+    setCategory("");
+    setContent("");
+    setOpen(false);
+  };
+
   const handleOnConfirm = (
     title: string,
     category: string,
@@ -53,22 +63,22 @@ function NoteForm({
       content,
       date: new Date().toISOString().slice(0, 10),
     };
-
-    onConfirm(newNote);
-
-    setTitle("");
-    setCategory("");
-    setContent("");
+    if (validateNote(newNote)) {
+      onConfirm(newNote);
+      handleClose();
+    } else {
+      setAlertText("Invalid note");
+      setOpenAlert(true);
+    }
   };
 
   return (
-    <Dialog open={open} onClose={() => setOpen(false)}>
+    <Dialog open={open} onClose={handleClose}>
       <DialogTitle>{text}</DialogTitle>
       <form
         onSubmit={(e) => {
           e.preventDefault();
           if (title && content) {
-            setOpen(false);
             handleOnConfirm(title, category, content);
           }
         }}
@@ -103,7 +113,7 @@ function NoteForm({
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpen(false)}>Cancel</Button>
+          <Button onClick={handleClose}>Cancel</Button>
           <Button type="submit">{confirmText}</Button>
         </DialogActions>
       </form>

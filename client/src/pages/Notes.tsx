@@ -1,23 +1,22 @@
 import { Note, useNoteStore } from "../state/noteStore";
-import NoteCard from "../components/NoteCard";
+import NoteCard from "../components/Note/NoteCard";
 import Masonry from "@mui/lab/Masonry";
 import Fab from "@mui/material/Fab/Fab";
 import AddIcon from "@mui/icons-material/Add";
 import { useEffect, useState } from "react";
-import NoteForm from "../components/NoteForm";
+import NoteForm from "../components/Note/NoteForm";
 import { apiPatchNote, apiPostNote } from "../utils/apiCalls";
 import { useSnackBarStore } from "../state/snackBarStore";
-import { validateNote } from "../validators/noteValidator";
 
 function Notes() {
-  const { loadNotes, getNotes, createNote, updateNote, setDirty } = useNoteStore();
+  const { loadData, getNotes, createNote, updateNote, setDirty } = useNoteStore();
   const { setOpenAlert, setAlertText } = useSnackBarStore();
   const [selectedNoteId, setSelectedNoteId] = useState("");
   const [openCreate, setOpenCreate] = useState(false);
   const [openUpdate, setOpenUpdate] = useState(false);
 
   useEffect(() => {
-    loadNotes(3, 5, setOpenAlert, setAlertText);
+    loadData(1, 1, setOpenAlert, setAlertText);
   }, []);
 
   const createNoteLocal = (note: Note) => {
@@ -31,7 +30,7 @@ function Notes() {
       .catch((error) => {
         if (!error.response) {
           setAlertText("Network error");
-          if (validateNote(note)) createNote(note);
+          createNote(note);
           setDirty(true);
         } else if (error.response.status === 400) {
           setAlertText("Invalid note");
@@ -55,7 +54,7 @@ function Notes() {
       .catch((error) => {
         if (!error.response) {
           setAlertText("Network error");
-          if (validateNote(note)) updateNote(note);
+          updateNote(note);
           setDirty(true);
         }
         if (error.response.status === 404) {

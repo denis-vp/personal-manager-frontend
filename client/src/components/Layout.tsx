@@ -17,7 +17,7 @@ type LayoutProps = {
 
 function Layout({ children }: LayoutProps) {
   return (
-    <Box sx={{ display: "flex" }}>
+    <Box sx={{ display: "flex", width: "100%" }}>
         <AppBar
           sx={{
             height: "57px",
@@ -40,7 +40,7 @@ function Layout({ children }: LayoutProps) {
 
       <SideDrawer drawerWidth={drawerWidth} />
 
-      <Page>{children}</Page>
+      <Page sx={{maxWidth: `calc(100% - ${drawerWidth + 50}px)`}}>{children}</Page>
     </Box>
   );
 }
