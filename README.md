@@ -1,8 +1,4 @@
-# Project Name
-
-## Description
-
-This project is a backend service that provides APIs for [describe the purpose of the backend service].
+# Personal Manager
 
 ## Installation
 
