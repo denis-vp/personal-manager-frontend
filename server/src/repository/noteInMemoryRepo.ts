@@ -16,6 +16,7 @@ export const getNote = async (id: string) => {
 
 export const addNote = async (note: Note) => {
     notes.push(note);
+    return note;
 };
 
 export const updateNote = async (id: string, note: Note) => {

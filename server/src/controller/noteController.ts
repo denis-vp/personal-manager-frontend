@@ -43,8 +43,8 @@ export const createNote = async (req: Request, res: Response) => {
   try {
     validateNote(note);
     note.id = uuidv4();
-    await noteRepository.addNote(note);
-    res.status(201).json(note);
+    const createdNote = await noteRepository.addNote(note);
+    res.status(201).json(createdNote);
   } catch (error: any) {
     res.status(400).json({ message: error.message });
   }
@@ -55,8 +55,8 @@ export const updateNote = async (req: Request, res: Response) => {
   const id = req.params.id;
   try {
     validateNote(note);
-    await noteRepository.updateNote(id, note);
-    res.status(200).json(note);
+    const updatedNote = await noteRepository.updateNote(id, note);
+    res.status(200).json(updatedNote);
   } catch (error: any) {
     res.status(404).json({ message: error.message });
   }

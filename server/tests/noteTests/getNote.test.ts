@@ -1,29 +1,17 @@
+import { beforeAll, afterAll, describe, expect, test } from "@jest/globals";
+import server from "../../src/index";
 import request from "supertest";
-import server, { Note, notes } from "../src/old/index.ts";
-import { beforeAll, afterAll, test, describe, expect } from "@jest/globals";
-
-const note: Note = {
-  id: "testId",
-  title: "A Note",
-  category: "todos",
-  content: "This is a note",
-  date: new Date().toISOString().slice(0, 10),
-};
+import prepareTestData from "./prepareTestData";
 
 beforeAll(() => {
-  notes.push(note);
+  prepareTestData();
 });
 
 afterAll(() => {
-  notes.splice(
-    notes.findIndex((n) => n.id === "testId"),
-    1
-  );
-
   server.close();
 });
 
-describe("Test get all notes", () => {
+describe("Test to get all notes", () => {
   test("It should respond with the GET method on all notes", (done) => {
     request(server)
       .get("/notes")
@@ -35,13 +23,20 @@ describe("Test get all notes", () => {
   });
 });
 
-describe("Test get specific note", () => {
+describe("Test to get a specific note", () => {
   test("It should respond with the GET method on a specific note", (done) => {
     request(server)
-      .get("/notes/testId")
+      .get("/notes/testId1")
       .then((response) => {
         expect(response.statusCode).toBe(200);
-        expect(response.body).toStrictEqual(note);
+        expect(response.body).toStrictEqual({
+          id: "testId1",
+          title: "A Note",
+          category: "todos",
+          content: "This is a note",
+          date: response.body.date,
+          associatedTaskId: "testTaskId1",
+        });
         done();
       });
   });
