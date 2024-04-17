@@ -11,7 +11,6 @@ export type Task = {
   isFinished: boolean;
   dueDate: string;
   priority: string; // low, medium, high or ""
-  associatedNotes: string[];
 };
 
 type TaskStore = {

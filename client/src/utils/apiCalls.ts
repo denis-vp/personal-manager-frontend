@@ -14,6 +14,10 @@ export const apiGetNote = async (id: string) => {
     return await axios.get(server + `/notes/${id}`);
 }
 
+export const apiGetNotesByTaskId = async (taskId: string) => {
+    return await axios.get(server + `/notes/task/${taskId}`);
+}
+
 export const apiPostNote = async (note: Note) => {
     return await axios.post(server + `/notes/create`, note);
 }

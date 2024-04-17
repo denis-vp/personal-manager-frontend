@@ -4,64 +4,86 @@ import { useSnackBarStore } from "../../state/snackBarStore";
 import { Task } from "../../state/taskStore";
 import DialogTitle from "@mui/material/DialogTitle/DialogTitle";
 import List from "@mui/material/List/List";
-import { apiGetNote } from "../../utils/apiCalls";
+import {
+  apiGetNote,
+  apiGetNotesByTaskId,
+  apiPatchNote,
+} from "../../utils/apiCalls";
 import { useEffect, useState } from "react";
 import ListItem from "@mui/material/ListItem/ListItem";
 import ListItemText from "@mui/material/ListItemText/ListItemText";
 import Divider from "@mui/material/Divider/Divider";
 import ListItemButton from "@mui/material/ListItemButton/ListItemButton";
-import TextField from "@mui/material/TextField/TextField";
 import Button from "@mui/material/Button/Button";
 import DialogActions from "@mui/material/DialogActions/DialogActions";
+import Typography from "@mui/material/Typography/Typography";
 
 type TaskAssociatedNotesProps = {
   task: Task;
   open: boolean;
   setOpen: (open: boolean) => void;
-  updateTask: (task: Task) => void;
 };
 
 function TaskAssociatedNotes({
   task,
   open,
   setOpen,
-  updateTask,
 }: TaskAssociatedNotesProps) {
   const { getNotes } = useNoteStore();
   const [associatedNotes, setAssociatedNotes] = useState<Note[]>([]);
   const { setOpenAlert, setAlertText } = useSnackBarStore();
 
-  const getNoteById = async (id: string) => {
-    try {
-      const response = await apiGetNote(id);
-      const note: Note = response.data;
-      return note;
-    } catch (error) {
-      setAlertText("Network error");
-      setOpenAlert(true);
-      return null;
-    }
-  };
-
   useEffect(() => {
-    const fetchNotes = async () => {
-      const fetchedNotes = await Promise.all(
-        task.associatedNotes.map((n) => getNoteById(n))
-      );
-      setAssociatedNotes(
-        fetchedNotes.filter((note): note is Note => note !== null)
-      );
-    };
-
-    fetchNotes();
+    apiGetNotesByTaskId(task.id)
+      .then((response) => {
+        setAssociatedNotes(response.data);
+      })
+      .catch((_) => {
+        setAlertText("Network error");
+        setOpenAlert(true);
+      });
   }, [task]);
 
+  const removeAssociatedNote = (noteId: string) => {
+    apiGetNote(noteId)
+      .then((response) => {
+        const note = response.data;
+        note.associatedTaskId = "";
+        apiPatchNote(note)
+          .then(() => {
+            setAssociatedNotes(
+              associatedNotes.filter((note) => note.id !== noteId)
+            );
+          })
+          .catch((_) => {
+            setAlertText("Network error");
+            setOpenAlert(true);
+          });
+      })
+      .catch((_) => {
+        setAlertText("Network error");
+        setOpenAlert(true);
+      });
+  };
+
   const addAssociatedNote = (noteId: string) => {
-    const newTask = {
-      ...task,
-      associatedNotes: [...task.associatedNotes, noteId],
-    };
-    updateTask(newTask);
+    apiGetNote(noteId)
+      .then((response) => {
+        const note = response.data;
+        note.associatedTaskId = task.id;
+        apiPatchNote(note)
+          .then(() => {
+            setAssociatedNotes([...associatedNotes, note]);
+          })
+          .catch((_) => {
+            setAlertText("Network error");
+            setOpenAlert(true);
+          });
+      })
+      .catch((_) => {
+        setAlertText("Network error");
+        setOpenAlert(true);
+      });
   };
 
   return (
@@ -70,24 +92,35 @@ function TaskAssociatedNotes({
       <List>
         {associatedNotes.map((note) => (
           <ListItem disablePadding>
-            <ListItemText primary={note.title} />
-          </ListItem>
-        ))}
-      </List>
-
-      {associatedNotes.length > 0 && <Divider />}
-
-      <List>
-        {getNotes().map((note) => (
-          <ListItem disablePadding>
-            <ListItemButton onClick={() => addAssociatedNote(note.id)}>
+            <ListItemButton onClick={() => removeAssociatedNote(note.id)}>
               <ListItemText primary={note.title} />
             </ListItemButton>
           </ListItem>
         ))}
       </List>
 
-      {getNotes().length === 0 && <TextField>No notes available</TextField>}
+      <Divider />
+
+      <List>
+        {getNotes()
+          .filter(
+            (note) =>
+              !associatedNotes.some(
+                (associatedNote) => associatedNote.id === note.id
+              )
+          )
+          .map((note) => (
+            <ListItem disablePadding>
+              <ListItemButton onClick={() => addAssociatedNote(note.id)}>
+                <ListItemText primary={note.title} />
+              </ListItemButton>
+            </ListItem>
+          ))}
+      </List>
+
+      {getNotes().length === 0 && (
+        <Typography sx={{ alignSelf: "center" }}>No notes available</Typography>
+      )}
 
       <DialogActions>
         <Button onClick={() => setOpen(false)}>Close</Button>

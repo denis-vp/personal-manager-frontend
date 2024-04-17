@@ -118,12 +118,6 @@ function TaskItem({ task, selected, onEdit }: TaskItemProps) {
           subheader={task.category}
         />
         <CardContent>
-          {/* TODO: Add deletable chips with associated */}
-
-          {task.associatedNotes.length === 0 ? null : (
-            <Divider sx={{ margin: "0 0 0.5em 0" }} />
-          )}
-
           <Typography variant="body1" color="textSecondary">
             {task.content}
           </Typography>
@@ -171,7 +165,6 @@ function TaskItem({ task, selected, onEdit }: TaskItemProps) {
         task={task}
         open={openAssociatedNotes}
         setOpen={setOpenAssociatedNotes}
-        updateTask={updateTaskLocal}
       />
     </>
   );

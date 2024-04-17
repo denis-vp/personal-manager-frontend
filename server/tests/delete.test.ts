@@ -1,5 +1,5 @@
 import request from "supertest";
-import server, { Note, notes } from "../index.ts";
+import server, { Note, notes } from "../src/old/index.ts";
 import { beforeAll, afterAll, test, describe, expect } from "@jest/globals";
 
 const note: Note = {

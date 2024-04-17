@@ -34,8 +34,6 @@ const router = createBrowserRouter([
   },
 ]);
 
-// TODO: use web sockets
-
 function App() {
   const { openAlert, alertText, setOpenAlert } = useSnackBarStore();
 

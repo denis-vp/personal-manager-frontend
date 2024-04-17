@@ -62,6 +62,7 @@ function NoteForm({
       category,
       content,
       date: new Date().toISOString().slice(0, 10),
+      associatedTaskId: note?.associatedTaskId || "",
     };
     if (validateNote(newNote)) {
       onConfirm(newNote);

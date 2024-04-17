@@ -1,100 +1,49 @@
 import express, { Express, Request, Response } from "express";
 import dotenv from "dotenv";
-import { v4 as uuidv4 } from "uuid";
-import { loremIpsum } from "lorem-ipsum";
 import cors from "cors";
-import { noteGenerator } from "./cronjob";
-// import "./socket";
-import { validateNote } from "./noteValidator"
+import bodyParser from "body-parser";
+import noteController from "./controller/noteController";
+import taskController from "./controller/taskController";
 
 dotenv.config();
 
 const app: Express = express();
-app.use(cors());
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
-
 const port = process.env.NODE_ENV === "test" ? 0 : process.env.PORT;
+app.use(cors());
+const jsonParser = bodyParser.json();
 
-export type Note = {
-  id: string;
-  title: string;
-  category: string;
-  content: string;
-  date: string;
-};
+// ----------------------------------- Ping Route -----------------------------------
 
-const placeholderNotes: Note[] = Array.from({ length: 20 }, (_, i) => ({
-  id: uuidv4(),
-  title: `Note ${i + 1}`,
-  category: "todos",
-  content: loremIpsum({
-    count: Math.floor(Math.random() * 10) + 1,
-    units: "sentences",
-  }),
-  date: new Date().toISOString().slice(0, 10),
-}));
-
-export let notes: Note[] = placeholderNotes;
-
-// noteGenerator();
-
-app.get("/notes", (req: Request, res: Response) => {
-  res.status(200);
-  res.json(notes);
+app.get("/", (req: Request, res: Response) => {
+    res.send("Server working!").status(200);
 });
 
-app.get("/notes/:id", (req: Request, res: Response) => {
-  const note = notes.find((n) => n.id === req.params.id);
+// ------------------------------------ Notes ---------------------------------------
 
-  if (note) {
-    res.status(200);
-    res.json(note);
-  } else {
-    res.status(404).json({ message: "Note not found" });
-  }
-});
+app.get("/notes", noteController.getNotes);
 
-app.post("/notes/create", (req: Request, res: Response) => {
-  const note: Note = req.body;
-  if (!validateNote(note)) {
-    res.status(400).json({ message: "Invalid note" });
-    return;
-  }
-  note.id = uuidv4();
-  notes.push(note);
-  res.status(201);
-  res.json(note);
-});
+app.get("/notes/:id", noteController.getNote);
 
-app.patch("/notes/:id", (req: Request, res: Response) => {
-  const noteIndex = notes.findIndex((n) => n.id === req.params.id);
-  if (noteIndex !== -1) {
-    const note: Note = req.body;
-    notes[noteIndex] = note;
-    if (!validateNote(note)) {
-      res.status(400).json({ message: "Invalid note" });
-      return;
-    }
-    res.status(200);
-    res.json(notes[noteIndex])
-  } else {
-    res.status(404).json({ message: "Note not found" });
-  }
-});
+app.get("/notes/task/:taskId", noteController.getNotesByTaskId);
 
-app.delete("/notes/:id", (req: Request, res: Response) => {
-  const noteIndex = notes.findIndex((n) => n.id === req.params.id);
+app.post("/notes/create", jsonParser, noteController.createNote);
 
-  if (noteIndex !== -1) {
-    notes.splice(noteIndex, 1);
-    res.status(204);
-  } else {
-    res.status(404).json({ message: "Note not found" });
-  }
+app.patch("/notes/:id", jsonParser, noteController.updateNote);
 
-  res.send();
-});
+app.delete("/notes/:id", noteController.deleteNote);
+
+// ------------------------------------ Tasks ---------------------------------------
+
+app.get("/tasks", taskController.getTasks);
+
+app.get("/tasks/:id", taskController.getTask);
+
+app.post("/tasks/create", jsonParser, taskController.createTask);
+
+app.patch("/tasks/:id", jsonParser, taskController.updateTask);
+
+app.delete("/tasks/:id", taskController.deleteTask);
+
 
 const server = app.listen(port, () => {
   console.group();
