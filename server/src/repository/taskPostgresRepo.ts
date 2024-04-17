@@ -27,13 +27,13 @@ export const updateTask = async (id: string, task: Task) => {
         throw new Error("Task not found");
     }
     return result.rows[0];
-}
+};
 
 export const deleteTask = async (id: string) => {
     const result = await pool.query('DELETE FROM public."tasks" WHERE id = $1', [id]);
     if (result.rowCount === 0) {
         throw new Error("Task not found");
     }
-}
+};
 
 export default { getTasks, getTask, addTask, updateTask, deleteTask };

@@ -1,3 +1,4 @@
 import taskPostgresRepo from "./taskPostgresRepo";
+import taskInMemoryRepo from "./taskInMemoryRepo";
 
-export default taskPostgresRepo;
+export default process.env.NODE_ENV === "test" ? taskInMemoryRepo : taskPostgresRepo;
