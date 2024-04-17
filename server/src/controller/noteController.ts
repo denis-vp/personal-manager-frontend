@@ -4,11 +4,27 @@ import { validateNote } from "../validators/noteValidator";
 import { v4 as uuidv4 } from "uuid";
 
 export const getNotes = async (req: Request, res: Response) => {
+  const { titleSortOrder } = req.query;
   try {
     const notes = await noteRepository.getNotes();
+    if (titleSortOrder === "ASC") {
+      notes.sort((a, b) => a.title.localeCompare(b.title));
+    } else if (titleSortOrder === "DESC") {
+      notes.sort((a, b) => b.title.localeCompare(a.title));
+    }
     res.status(200).json(notes);
   } catch (error: any) {
     res.status(400).json({ message: error.message });
+  }
+};
+
+export const getNotesByTaskId = async (req: Request, res: Response) => {
+  const taskId = req.params.taskId;
+  try {
+      const notes = await noteRepository.getNotesByTaskId(taskId);
+      res.status(200).json(notes);
+  } catch (error: any) {
+      res.status(400).json({ message: error.message });
   }
 };
 
@@ -56,14 +72,4 @@ export const deleteNote = async (req: Request, res: Response) => {
   }
 };
 
-export const getNotesByTaskId = async (req: Request, res: Response) => {
-    const taskId = req.params.taskId;
-    try {
-        const notes = await noteRepository.getNotesByTaskId(taskId);
-        res.status(200).json(notes);
-    } catch (error: any) {
-        res.status(400).json({ message: error.message });
-    }
-};
-
-export default { getNotes, getNote, createNote, updateNote, deleteNote, getNotesByTaskId };
+export default { getNotes, getNotesByTaskId, getNote, createNote, updateNote, deleteNote };

@@ -10,6 +10,11 @@ export const apiGetNotes = async () => {
     return await axios.get(server + "/notes");
 }
 
+export const apiGetNotesOrderedByTitle = async (ascending: boolean = true) => {
+    const sortOrder = ascending ? 'ASC' : 'DESC';
+    return await axios.get(server + `/notes?titleSortOrder=${sortOrder}`);
+}
+
 export const apiGetNote = async (id: string) => {
     return await axios.get(server + `/notes/${id}`);
 }
