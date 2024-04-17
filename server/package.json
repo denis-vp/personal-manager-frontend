@@ -6,7 +6,7 @@
   "scripts": {
     "build": "npx tsc",
     "test": "npx jest test/*",
-    "start": "node dist/index.js",
+    "start": "node dist/src/index.js",
     "dev": "nodemon src/index.ts"
   },
   "author": "",
