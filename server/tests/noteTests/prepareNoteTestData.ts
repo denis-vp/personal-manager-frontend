@@ -19,7 +19,7 @@ const noteFactory = (
   };
 };
 
-const prepareTestData = () => {
+const prepareNoteTestData = () => {
   noteRepository.addNote(
     noteFactory(
       "testId1",
@@ -52,4 +52,4 @@ const prepareTestData = () => {
   );
 };
 
-export default prepareTestData;
+export default prepareNoteTestData;

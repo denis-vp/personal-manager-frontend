@@ -1,10 +1,10 @@
 import { beforeAll, afterAll, describe, expect, test } from "@jest/globals";
 import server from "../../src/index";
 import request from "supertest";
-import prepareTestData from "./prepareTestData";
+import prepareNoteTestData from "./prepareNoteTestData";
 
 beforeAll(() => {
-  prepareTestData();
+  prepareNoteTestData();
 });
 
 afterAll(() => {

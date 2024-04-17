@@ -60,8 +60,8 @@ const createNote = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     try {
         (0, noteValidator_1.validateNote)(note);
         note.id = (0, uuid_1.v4)();
-        yield noteRepository_1.default.addNote(note);
-        res.status(201).json(note);
+        const createdNote = yield noteRepository_1.default.addNote(note);
+        res.status(201).json(createdNote);
     }
     catch (error) {
         res.status(400).json({ message: error.message });
@@ -73,8 +73,8 @@ const updateNote = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     const id = req.params.id;
     try {
         (0, noteValidator_1.validateNote)(note);
-        yield noteRepository_1.default.updateNote(id, note);
-        res.status(200).json(note);
+        const updatedNote = yield noteRepository_1.default.updateNote(id, note);
+        res.status(200).json(updatedNote);
     }
     catch (error) {
         res.status(404).json({ message: error.message });

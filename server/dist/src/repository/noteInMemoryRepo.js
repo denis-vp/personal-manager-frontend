@@ -25,6 +25,7 @@ const getNote = (id) => __awaiter(void 0, void 0, void 0, function* () {
 exports.getNote = getNote;
 const addNote = (note) => __awaiter(void 0, void 0, void 0, function* () {
     notes.push(note);
+    return note;
 });
 exports.addNote = addNote;
 const updateNote = (id, note) => __awaiter(void 0, void 0, void 0, function* () {
