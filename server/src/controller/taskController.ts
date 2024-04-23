@@ -27,8 +27,8 @@ export const createTask = async (req: Request, res: Response) => {
   try {
     validateTask(task);
     task.id = uuidv4();
-    await taskRepository.addTask(task);
-    res.status(201).json(task);
+    const createdTask = await taskRepository.addTask(task);
+    res.status(201).json(createdTask);
   } catch (error: any) {
     res.status(400).json({ message: error.message });
   }
@@ -39,8 +39,8 @@ export const updateTask = async (req: Request, res: Response) => {
   const id = req.params.id;
   try {
     validateTask(task);
-    await taskRepository.updateTask(id, task);
-    res.status(200).json(task);
+    const updatedTask = await taskRepository.updateTask(id, task);
+    res.status(200).json(updatedTask);
   } catch (error: any) {
     res.status(404).json({ message: error.message });
   }

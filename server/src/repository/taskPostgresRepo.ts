@@ -19,6 +19,7 @@ export const addTask = async (task: Task) => {
     if (result.rowCount === 0) {
         throw new Error("Task not added");
     }
+    return result.rows[0];
 };
 
 export const updateTask = async (id: string, task: Task) => {

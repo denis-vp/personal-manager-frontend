@@ -4,5 +4,5 @@ export type Note = {
     category: string;
     content: string;
     date: string;
-    associatedTaskId: string;
+    associatedTaskId: string | null;
 };

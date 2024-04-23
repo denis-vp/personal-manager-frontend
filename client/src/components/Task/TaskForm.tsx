@@ -91,10 +91,8 @@ function TaskForm({
       isFinished,
       dueDate,
       priority: priority,
-      associatedNotes: task?.associatedNotes || [],
     };
     if (validateTask(newTask)) {
-      console.log(newTask);
       onConfirm(newTask);
       handleClose();
     } else {

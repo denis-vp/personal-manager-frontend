@@ -19,6 +19,7 @@ export const addNote = async (note: Note) => {
     if (result.rowCount === 0) {
         throw new Error("Note not added");
     }
+    return result.rows[0];
 };
 
 export const updateNote = async (id: string, note: Note) => {
