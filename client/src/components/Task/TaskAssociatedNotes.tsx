@@ -1,5 +1,5 @@
 import Dialog from "@mui/material/Dialog/Dialog";
-import { Note, useNoteStore } from "../../state/noteStore";
+import { Note } from "../../state/noteStore";
 import { useSnackBarStore } from "../../state/snackBarStore";
 import { Task } from "../../state/taskStore";
 import DialogTitle from "@mui/material/DialogTitle/DialogTitle";

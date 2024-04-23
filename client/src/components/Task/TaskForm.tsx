@@ -21,7 +21,6 @@ import { validateTask } from "../../validators/taskValidator";
 import { useSnackBarStore } from "../../state/snackBarStore";
 import dayjs from "dayjs";
 import { IconButton } from "@mui/material";
-import { ConstructionOutlined } from "@mui/icons-material";
 
 type TaskFormProps = {
   text: string;
