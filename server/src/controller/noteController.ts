@@ -4,7 +4,7 @@ import { validateNote } from "../validators/noteValidator";
 import { v4 as uuidv4 } from "uuid";
 
 export const getNotes = async (req: Request, res: Response) => {
-  const { titleSortOrder } = req.query;
+  const titleSortOrder  = req.params.titleSortOrder;
   try {
     const notes = await noteRepository.getNotes();
     if (titleSortOrder === "ASC") {

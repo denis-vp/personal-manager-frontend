@@ -80,6 +80,7 @@ export const useNoteStore = create<NoteStore>()((set, get) => ({
             set({ notes: notes ? JSON.parse(notes) : [] });
           }
         } else {
+          console.log(error.response.data);
           setAlertText("Error loading notes");
           setOpenAlert(true);
         }

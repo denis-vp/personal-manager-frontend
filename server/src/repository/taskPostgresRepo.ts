@@ -15,14 +15,14 @@ export const getTask = async (id: string) => {
 };
 
 export const addTask = async (task: Task) => {
-    const result = await pool.query('INSERT INTO public."tasks" (id, title, category, content, isFinished, dueDate, priority) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *', [task.id, task.title, task.category, task.content, task.isFinished, task.dueDate, task.priority]);
+    const result = await pool.query('INSERT INTO public."tasks" (id, title, category, content, isfinished, duedate, priority) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *', [task.id, task.title, task.category, task.content, task.isFinished, task.dueDate, task.priority]);
     if (result.rowCount === 0) {
         throw new Error("Task not added");
     }
 };
 
 export const updateTask = async (id: string, task: Task) => {
-    const result = await pool.query('UPDATE public."tasks" SET title = $2, category = $3, content = $4, isFinished = $5, dueDate = $6, priority = $7 WHERE id = $1 RETURNING *', [id, task.title, task.category, task.content, task.isFinished, task.dueDate, task.priority]);
+    const result = await pool.query('UPDATE public."tasks" SET title = $2, category = $3, content = $4, isfinished = $5, duedate = $6, priority = $7 WHERE id = $1 RETURNING *', [id, task.title, task.category, task.content, task.isFinished, task.dueDate, task.priority]);
     if (result.rowCount === 0) {
         throw new Error("Task not found");
     }
