@@ -7,6 +7,7 @@ import List from "@mui/material/List/List";
 import {
   apiGetNote,
   apiGetNotesByTaskId,
+  apiGetUnassociatedNotes,
   apiPatchNote,
 } from "../../utils/apiCalls";
 import { useEffect, useState } from "react";
@@ -29,8 +30,8 @@ function TaskAssociatedNotes({
   open,
   setOpen,
 }: TaskAssociatedNotesProps) {
-  const { getNotes } = useNoteStore();
   const [associatedNotes, setAssociatedNotes] = useState<Note[]>([]);
+  const [unassociatedNotes, setUnassociatedNotes] = useState<Note[]>([]);
   const { setOpenAlert, setAlertText } = useSnackBarStore();
 
   useEffect(() => {
@@ -42,13 +43,22 @@ function TaskAssociatedNotes({
         setAlertText("Network error");
         setOpenAlert(true);
       });
-  }, [task]);
+
+    apiGetUnassociatedNotes()
+      .then((response) => {
+        setUnassociatedNotes(response.data);
+      })
+      .catch((_) => {
+        setAlertText("Network error");
+        setOpenAlert(true);
+      });
+  }, [open, associatedNotes]);
 
   const removeAssociatedNote = (noteId: string) => {
     apiGetNote(noteId)
       .then((response) => {
         const note = response.data;
-        note.associatedTaskId = "";
+        note.associatedTaskId = null;
         apiPatchNote(note)
           .then(() => {
             setAssociatedNotes(
@@ -88,10 +98,10 @@ function TaskAssociatedNotes({
 
   return (
     <Dialog open={open} onClose={() => setOpen(false)}>
-      <DialogTitle>Associated Notes</DialogTitle>
+      <DialogTitle sx={{ alignSelf: "center" }}>Associated Notes</DialogTitle>
       <List>
         {associatedNotes.map((note) => (
-          <ListItem disablePadding>
+          <ListItem disablePadding key={note.id}>
             <ListItemButton onClick={() => removeAssociatedNote(note.id)}>
               <ListItemText primary={note.title} />
             </ListItemButton>
@@ -99,10 +109,15 @@ function TaskAssociatedNotes({
         ))}
       </List>
 
+      {associatedNotes.length === 0 && (
+        <Typography sx={{ alignSelf: "center", paddingBottom: "1em" }}>No notes associated</Typography>
+      )}
+
       <Divider />
 
+      <DialogTitle sx={{ alignSelf: "center" }}>Available Notes</DialogTitle>
       <List>
-        {getNotes()
+        {unassociatedNotes
           .filter(
             (note) =>
               !associatedNotes.some(
@@ -110,7 +125,7 @@ function TaskAssociatedNotes({
               )
           )
           .map((note) => (
-            <ListItem disablePadding>
+            <ListItem disablePadding key={note.id}>
               <ListItemButton onClick={() => addAssociatedNote(note.id)}>
                 <ListItemText primary={note.title} />
               </ListItemButton>
@@ -118,7 +133,7 @@ function TaskAssociatedNotes({
           ))}
       </List>
 
-      {getNotes().length === 0 && (
+      {unassociatedNotes.length === 0 && (
         <Typography sx={{ alignSelf: "center" }}>No notes available</Typography>
       )}
 

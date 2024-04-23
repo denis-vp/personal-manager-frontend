@@ -138,7 +138,7 @@ function TaskItem({ task, selected, onEdit }: TaskItemProps) {
                   : "textSecondary",
               }}
             >
-              {task.dueDate === ""
+              {task.dueDate === null
                 ? ""
                 : dayjs(task.dueDate).format("MMM D, YYYY")}
             </Typography>

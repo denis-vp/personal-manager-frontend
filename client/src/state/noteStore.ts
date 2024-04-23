@@ -9,7 +9,7 @@ export type Note = {
   category: string;
   content: string;
   date: string;
-  associatedTaskId: string | null;
+  associatedtaskid: string | null;
 };
 
 type NoteStore = {

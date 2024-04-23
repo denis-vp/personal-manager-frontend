@@ -6,6 +6,14 @@ export const getNotes = async () => {
     return notes;
 };
 
+export const getNotesByTaskId = async (taskId: string) => {
+    return notes.filter(note => note.associatedTaskId === taskId);
+};
+
+export const getUnassociatedNotes = async () => {
+    return notes.filter(note => !note.associatedTaskId);
+};
+
 export const getNote = async (id: string) => {
     const note = notes.find(note => note.id === id);
     if (!note) {
@@ -36,8 +44,4 @@ export const deleteNote = async (id: string) => {
     notes.splice(index, 1);
 }
 
-export const getNotesByTaskId = async (taskId: string) => {
-    return notes.filter(note => note.associatedTaskId === taskId);
-}
-
-export default { getNotes, getNote, addNote, updateNote, deleteNote, getNotesByTaskId };
+export default { getNotes, getNotesByTaskId, getUnassociatedNotes, getNote, addNote, updateNote, deleteNote};

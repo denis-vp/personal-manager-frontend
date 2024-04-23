@@ -15,12 +15,16 @@ export const apiGetNotesOrderedByTitle = async (ascending: boolean = true) => {
     return await axios.get(server + `/notes?titleSortOrder=${sortOrder}`);
 }
 
-export const apiGetNote = async (id: string) => {
-    return await axios.get(server + `/notes/${id}`);
-}
-
 export const apiGetNotesByTaskId = async (taskId: string) => {
     return await axios.get(server + `/notes/task/${taskId}`);
+}
+
+export const apiGetUnassociatedNotes = async () => {
+    return await axios.get(server + "/notes/unassociated");
+}
+
+export const apiGetNote = async (id: string) => {
+    return await axios.get(server + `/notes/${id}`);
 }
 
 export const apiPostNote = async (note: Note) => {

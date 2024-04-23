@@ -9,7 +9,7 @@ export type Task = {
   category: string;
   content: string;
   isFinished: boolean;
-  dueDate: string;
+  dueDate: string | null;
   priority: string; // low, medium, high or ""
 };
 

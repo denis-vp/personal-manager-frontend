@@ -75,7 +75,7 @@ function Tasks() {
 
   return (
     <>
-      <Stack>
+      <Stack spacing={2}>
         {getTasks().map((task) => (
           <div key={task.id} onClick={() => setSelectedNoteId(task.id)}>
             <TaskItem

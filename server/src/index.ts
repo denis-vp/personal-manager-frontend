@@ -22,9 +22,11 @@ app.get("/", (req: Request, res: Response) => {
 
 app.get("/notes", noteController.getNotes);
 
-app.get("/notes/:id", noteController.getNote);
-
 app.get("/notes/task/:taskId", noteController.getNotesByTaskId);
+
+app.get("/notes/unassociated", noteController.getUnassociatedNotes);
+
+app.get("/notes/:id", noteController.getNote);
 
 app.post("/notes/create", jsonParser, noteController.createNote);
 

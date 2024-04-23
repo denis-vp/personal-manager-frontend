@@ -28,6 +28,15 @@ export const getNotesByTaskId = async (req: Request, res: Response) => {
   }
 };
 
+export const getUnassociatedNotes = async (req: Request, res: Response) => {
+  try {
+    const notes = await noteRepository.getUnassociatedNotes();
+    res.status(200).json(notes);
+  } catch (error: any) {
+    res.status(400).json({ message: error.message });
+  }
+}
+
 export const getNote = async (req: Request, res: Response) => {
   const id = req.params.id;
   try {
@@ -72,4 +81,4 @@ export const deleteNote = async (req: Request, res: Response) => {
   }
 };
 
-export default { getNotes, getNotesByTaskId, getNote, createNote, updateNote, deleteNote };
+export default { getNotes, getNotesByTaskId, getUnassociatedNotes, getNote, createNote, updateNote, deleteNote };

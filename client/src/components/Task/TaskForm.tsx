@@ -21,6 +21,7 @@ import { validateTask } from "../../validators/taskValidator";
 import { useSnackBarStore } from "../../state/snackBarStore";
 import dayjs from "dayjs";
 import { IconButton } from "@mui/material";
+import { ConstructionOutlined } from "@mui/icons-material";
 
 type TaskFormProps = {
   text: string;
@@ -43,13 +44,13 @@ function TaskForm({
   const [category, setCategory] = useState("");
   const [priority, setPriority] = useState("");
   const [isFinished, setIsFinished] = useState(false);
-  const [dueDate, setDueDate] = useState("");
+  const [dueDate, setDueDate] = useState<string | null>(null);
   const [content, setContent] = useState("");
   const { setOpenAlert, setAlertText } = useSnackBarStore();
 
   useEffect(() => {
     if (task) {
-      setTitle(task.title);
+      setTitle(task.title); 
       setCategory(task.category);
       setContent(task.content);
       setIsFinished(task.isFinished);
@@ -80,7 +81,7 @@ function TaskForm({
     category: string,
     content: string,
     isFinished: boolean,
-    dueDate: string,
+    dueDate: string | null,
     priority: string
   ) => {
     const newTask: Task = {
@@ -89,7 +90,7 @@ function TaskForm({
       category,
       content,
       isFinished,
-      dueDate,
+      dueDate: dueDate !== "" ? dueDate : null,
       priority: priority,
     };
     if (validateTask(newTask)) {
@@ -186,9 +187,7 @@ function TaskForm({
                 control={
                   <Checkbox
                     checked={isFinished}
-                    onChange={(e) =>
-                      setIsFinished(e.target.checked)
-                    }
+                    onChange={(e) => setIsFinished(e.target.checked)}
                   />
                 }
               />
