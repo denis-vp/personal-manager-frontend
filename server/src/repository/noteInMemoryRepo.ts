@@ -2,7 +2,7 @@ import { Note } from "../model/note";
 
 const notes: Note[] = [];
 
-export const getNotes = async () => {
+export const getNotes = async (page: number, pageSize: number) => {
     return notes;
 };
 

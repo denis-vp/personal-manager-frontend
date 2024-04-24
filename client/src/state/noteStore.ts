@@ -15,18 +15,7 @@ export type Note = {
 type NoteStore = {
   notes: Note[];
   dirty: boolean;
-  loadData: (
-    numTries: number,
-    waitTime: number,
-    setOpenAlert: (open: boolean) => void,
-    setAlertText: (text: string) => void
-  ) => void;
-  loadNotes: (
-    numTries: number,
-    waitTime: number,
-    setOpenAlert: (open: boolean) => void,
-    setAlertText: (text: string) => void
-  ) => void;
+  loadNotes: (page: number, pageSize: number) => void;
   getNotes: () => Note[];
   getNote: (id: string) => Note | undefined;
   setNotes: (notes: Note[]) => void;
@@ -39,50 +28,12 @@ type NoteStore = {
 export const useNoteStore = create<NoteStore>()((set, get) => ({
   notes: [],
   dirty: false,
-  loadData: (
-    numTries: number,
-    waitTime: number,
-    setOpenAlert: (open: boolean) => void,
-    setAlertText: (text: string) => void
-  ) => {
-    get().loadNotes(numTries, waitTime, setOpenAlert, setAlertText);
-    localStorage.setItem(notesLocalStorage, JSON.stringify(get().notes));
-  },
-  loadNotes: (
-    numTries: number,
-    waitTime: number,
-    setOpenAlert: (open: boolean) => void,
-    setAlertText: (text: string) => void
-  ) => {
-    apiGetNotes()
+  loadNotes: (page: number, pageSize: number) => {
+    apiGetNotes(page, pageSize)
       .then((response) => {
-        set({ notes: response.data });
+        set({ notes: [...get().notes, ...response.data] });
       })
-      .catch((error) => {
-        if (!error.response) {
-          if (numTries > 0) {
-            setAlertText(
-              `Can not connect to server, retrying in ${waitTime} second(s)...`
-            );
-            setOpenAlert(true);
-            setTimeout(() => {
-              get().loadNotes(
-                numTries - 1,
-                waitTime,
-                setOpenAlert,
-                setAlertText
-              );
-            }, 1000 * waitTime);
-          } else {
-            setAlertText("Can not connect to server, using local storage");
-            setOpenAlert(true);
-            const notes = localStorage.getItem(notesLocalStorage);
-            set({ notes: notes ? JSON.parse(notes) : [] });
-          }
-        } else {
-          setAlertText("Error loading notes");
-          setOpenAlert(true);
-        }
+      .catch((_) => {
       });
   },
   getNotes: () => get().notes,

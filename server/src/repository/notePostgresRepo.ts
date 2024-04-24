@@ -1,8 +1,9 @@
 import { Note } from "../model/note";
 import pool from "../postgresDatabase";
 
-export const getNotes = async () => {
-    const result = await pool.query('SELECT * FROM public."notes"');
+export const getNotes = async (page: number, pageSize: number) => {
+    const offset = (page - 1) * pageSize;
+    const result = await pool.query('SELECT * FROM public."notes" ORDER BY id OFFSET $1 LIMIT $2', [offset, pageSize]);
     return result.rows;
 };
 

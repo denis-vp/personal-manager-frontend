@@ -6,13 +6,13 @@ const server = import.meta.env.VITE_SERVER as string;
 
 // -------------------------------- Notes --------------------------------
 
-export const apiGetNotes = async () => {
-    return await axios.get(server + "/notes");
+export const apiGetNotes = async (page: number, pageSize: number) => {
+    return await axios.get(server + `/notes?page=${page}&limit=${pageSize}`);
 }
 
-export const apiGetNotesOrderedByTitle = async (ascending: boolean = true) => {
+export const apiGetNotesOrderedByTitle = async (page: number, pageSize: number, ascending: boolean = true) => {
     const sortOrder = ascending ? 'ASC' : 'DESC';
-    return await axios.get(server + `/notes?titleSortOrder=${sortOrder}`);
+    return await axios.get(server + `/notes?page=${page}&limit=${pageSize}&titleSortOrder=${sortOrder}`);
 }
 
 export const apiGetNotesByTaskId = async (taskId: string) => {

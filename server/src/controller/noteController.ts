@@ -5,13 +5,18 @@ import { v4 as uuidv4 } from "uuid";
 
 export const getNotes = async (req: Request, res: Response) => {
   const titleSortOrder  = req.params.titleSortOrder;
+  const page = parseInt(req.query.page as string) || 1;
+  const pageSize = parseInt(req.query.limit as string) || 25;
+
   try {
-    const notes = await noteRepository.getNotes();
+    const notes = await noteRepository.getNotes(page, pageSize);
+
     if (titleSortOrder === "ASC") {
       notes.sort((a, b) => a.title.localeCompare(b.title));
     } else if (titleSortOrder === "DESC") {
       notes.sort((a, b) => b.title.localeCompare(a.title));
     }
+
     res.status(200).json(notes);
   } catch (error: any) {
     res.status(400).json({ message: error.message });

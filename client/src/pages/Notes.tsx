@@ -3,21 +3,34 @@ import NoteCard from "../components/Note/NoteCard";
 import Masonry from "@mui/lab/Masonry";
 import Fab from "@mui/material/Fab/Fab";
 import AddIcon from "@mui/icons-material/Add";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import NoteForm from "../components/Note/NoteForm";
 import { apiPatchNote, apiPostNote } from "../utils/apiCalls";
 import { useSnackBarStore } from "../state/snackBarStore";
 
 function Notes() {
-  const { loadData, getNotes, createNote, updateNote, setDirty } = useNoteStore();
+  const { loadNotes, getNotes, createNote, updateNote, setDirty } =
+    useNoteStore();
   const { setOpenAlert, setAlertText } = useSnackBarStore();
   const [selectedNoteId, setSelectedNoteId] = useState("");
   const [openCreate, setOpenCreate] = useState(false);
   const [openUpdate, setOpenUpdate] = useState(false);
+  const [page, setPage] = useState(1);
+  const observer = useRef<IntersectionObserver | null>(null);
+
+  const lastNoteElementRef = useCallback((node: any) => {
+    if (observer.current) observer.current.disconnect();
+    observer.current = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting) {
+        setPage((prev) => prev + 1);
+      }
+    });
+    if (node) observer.current.observe(node);
+  }, []);
 
   useEffect(() => {
-    loadData(1, 1, setOpenAlert, setAlertText);
-  }, []);
+    loadNotes(page, 25);
+  }, [page]);
 
   const createNoteLocal = (note: Note) => {
     apiPostNote(note)
@@ -74,15 +87,33 @@ function Notes() {
   return (
     <>
       <Masonry columns={3} spacing={3} sx={{ margin: 0, padding: 0 }}>
-        {getNotes().map((note) => (
-          <div key={note.id} onClick={() => setSelectedNoteId(note.id)}>
-            <NoteCard
-              note={note}
-              selected={selectedNoteId === note.id}
-              onEdit={() => setOpenUpdate(true)}
-            />
-          </div>
-        ))}
+        {getNotes().map((note, index) => {
+          if (getNotes().length === index + 1) {
+            return (
+              <div
+                ref={lastNoteElementRef}
+                key={note.id}
+                onClick={() => setSelectedNoteId(note.id)}
+              >
+                <NoteCard
+                  note={note}
+                  selected={selectedNoteId === note.id}
+                  onEdit={() => setOpenUpdate(true)}
+                />
+              </div>
+            );
+          } else {
+            return (
+              <div key={note.id} onClick={() => setSelectedNoteId(note.id)}>
+                <NoteCard
+                  note={note}
+                  selected={selectedNoteId === note.id}
+                  onEdit={() => setOpenUpdate(true)}
+                />
+              </div>
+            );
+          }
+        })}
       </Masonry>
 
       <Fab
