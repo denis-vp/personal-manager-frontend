@@ -41,8 +41,8 @@ export const apiDeleteNote = async (id: string) => {
 
 // -------------------------------- Tasks --------------------------------
 
-export const apiGetTasks = async () => {
-    return await axios.get(server + "/tasks");
+export const apiGetTasks = async (page: number, pageSize: number) => {
+    return await axios.get(server + "/tasks?page=" + page + "&limit=" + pageSize);
 }
 
 export const apiGetTask = async (id: string) => {

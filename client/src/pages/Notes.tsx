@@ -9,7 +9,7 @@ import { apiPatchNote, apiPostNote } from "../utils/apiCalls";
 import { useSnackBarStore } from "../state/snackBarStore";
 
 function Notes() {
-  const { loadNotes, getNotes, createNote, updateNote, setDirty } =
+  const { loadNotes, getNotes, createNote, updateNote } =
     useNoteStore();
   const { setOpenAlert, setAlertText } = useSnackBarStore();
   const [selectedNoteId, setSelectedNoteId] = useState("");
@@ -38,16 +38,10 @@ function Notes() {
         setAlertText("Note created");
         setOpenAlert(true);
         createNote(response.data);
-        setDirty(false);
       })
       .catch((error) => {
-        if (!error.response) {
-          setAlertText("Network error");
-          createNote(note);
-          setDirty(true);
-        } else if (error.response.status === 400) {
+        if (error.response.status === 400) {
           setAlertText("Invalid note");
-          setDirty(false);
         }
         setOpenAlert(true);
       })
@@ -62,20 +56,12 @@ function Notes() {
         setAlertText("Note updated");
         setOpenAlert(true);
         updateNote(response.data);
-        setDirty(false);
       })
       .catch((error) => {
-        if (!error.response) {
-          setAlertText("Network error");
-          updateNote(note);
-          setDirty(true);
-        }
         if (error.response.status === 404) {
           setAlertText("Note not found");
-          setDirty(false);
         } else if (error.response.status === 400) {
           setAlertText("Invalid note");
-          setDirty(false);
         }
         setOpenAlert(true);
       })

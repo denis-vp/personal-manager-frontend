@@ -14,7 +14,6 @@ export type Note = {
 
 type NoteStore = {
   notes: Note[];
-  dirty: boolean;
   loadNotes: (page: number, pageSize: number) => void;
   getNotes: () => Note[];
   getNote: (id: string) => Note | undefined;
@@ -22,12 +21,10 @@ type NoteStore = {
   createNote: (note: Note) => void;
   updateNote: (note: Note) => void;
   deleteNote: (id: string) => void;
-  setDirty: (dirty: boolean) => void;
 };
 
 export const useNoteStore = create<NoteStore>()((set, get) => ({
   notes: [],
-  dirty: false,
   loadNotes: (page: number, pageSize: number) => {
     apiGetNotes(page, pageSize)
       .then((response) => {
@@ -41,19 +38,13 @@ export const useNoteStore = create<NoteStore>()((set, get) => ({
   setNotes: (notes: Note[]) => set({ notes }),
   createNote: (note: Note) => {
     set({ notes: [...get().notes, note] });
-    localStorage.setItem(notesLocalStorage, JSON.stringify(get().notes));
   },
   updateNote: (note: Note) => {
     set({
       notes: get().notes.map((n) => (n.id === note.id ? note : n)),
     });
-    localStorage.setItem(notesLocalStorage, JSON.stringify(get().notes));
   },
   deleteNote: (id: string) => {
     set({ notes: get().notes.filter((n) => n.id !== id) });
-    localStorage.setItem(notesLocalStorage, JSON.stringify(get().notes));
-  },
-  setDirty: (dirty: boolean) => {
-    set({ dirty });
   },
 }));

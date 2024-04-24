@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Task, useTaskStore } from "../state/taskStore";
 import { useSnackBarStore } from "../state/snackBarStore";
 import Stack from "@mui/material/Stack/Stack";
@@ -9,16 +9,27 @@ import TaskForm from "../components/Task/TaskForm";
 import { apiPatchTask, apiPostTask } from "../utils/apiCalls";
 
 function Tasks() {
-  const { loadData, getTasks, createTask, updateTask, setDirty } =
-    useTaskStore();
+  const { loadTasks, getTasks, createTask, updateTask } = useTaskStore();
   const { setOpenAlert, setAlertText } = useSnackBarStore();
   const [selectedNoteId, setSelectedNoteId] = useState("");
   const [openCreate, setOpenCreate] = useState(false);
   const [openUpdate, setOpenUpdate] = useState(false);
+  const [page, setPage] = useState(1);
+  const observer = useRef<IntersectionObserver | null>(null);
+
+  const lastNoteElementRef = useCallback((node: any) => {
+    if (observer.current) observer.current.disconnect();
+    observer.current = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting) {
+        setPage((prev) => prev + 1);
+      }
+    });
+    if (node) observer.current.observe(node);
+  }, []);
 
   useEffect(() => {
-    loadData(1, 1, setOpenAlert, setAlertText);
-  }, []);
+    loadTasks(page, 25);
+  }, [page]);
 
   const createTaskLocal = (task: Task) => {
     apiPostTask(task)
@@ -26,17 +37,10 @@ function Tasks() {
         setAlertText("Task created");
         setOpenAlert(true);
         createTask(response.data);
-        setDirty(false);
       })
       .catch((error) => {
-        if (!error.response) {
-          setAlertText("Network error");
-          createTask(task);
-          setDirty(true);
-        }
         if (error.response.status === 400) {
           setAlertText("Invalid task");
-          setDirty(false);
         }
         setOpenAlert(true);
       })
@@ -51,20 +55,12 @@ function Tasks() {
         setAlertText("Task updated");
         setOpenAlert(true);
         updateTask(response.data);
-        setDirty(false);
       })
       .catch((error) => {
-        if (!error.response) {
-          setAlertText("Network error");
-          updateTask(task);
-          setDirty(true);
-        }
         if (error.response.status === 404) {
           setAlertText("Task not found");
-          setDirty(false);
         } else if (error.response.status === 400) {
           setAlertText("Invalid task");
-          setDirty(false);
         }
         setOpenAlert(true);
       })
@@ -76,15 +72,33 @@ function Tasks() {
   return (
     <>
       <Stack spacing={2}>
-        {getTasks().map((task) => (
-          <div key={task.id} onClick={() => setSelectedNoteId(task.id)}>
-            <TaskItem
-              task={task}
-              selected={selectedNoteId === task.id}
-              onEdit={() => setOpenUpdate(true)}
-            />
-          </div>
-        ))}
+        {getTasks().map((task, index) => {
+          if (getTasks().length === index + 1) {
+            return (
+              <div
+                ref={lastNoteElementRef}
+                key={task.id}
+                onClick={() => setSelectedNoteId(task.id)}
+              >
+                <TaskItem
+                  task={task}
+                  selected={selectedNoteId === task.id}
+                  onEdit={() => setOpenUpdate(true)}
+                />
+              </div>
+            );
+          } else {
+            return (
+              <div key={task.id} onClick={() => setSelectedNoteId(task.id)}>
+                <TaskItem
+                  task={task}
+                  selected={selectedNoteId === task.id}
+                  onEdit={() => setOpenUpdate(true)}
+                />
+              </div>
+            );
+          }
+        })}
       </Stack>
 
       <Fab

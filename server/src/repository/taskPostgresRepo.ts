@@ -1,8 +1,9 @@
 import { Task } from "../model/task";
 import pool from "../postgresDatabase";
 
-export const getTasks = async () => {
-    const result = await pool.query('SELECT * FROM public."tasks"');
+export const getTasks = async (page: number, pageSize: number) => {
+    const offset = (page - 1) * pageSize;
+    const result = await pool.query('SELECT * FROM public."tasks" ORDER BY "dueDate" OFFSET $1 LIMIT $2', [offset, pageSize]);
     return result.rows;
 };
 

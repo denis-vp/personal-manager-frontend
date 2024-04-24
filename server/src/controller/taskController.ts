@@ -4,8 +4,11 @@ import { validateTask } from "../validators/taskValidator";
 import { v4 as uuidv4 } from "uuid";
 
 export const getTasks = async (req: Request, res: Response) => {
+  const page = parseInt(req.query.page as string) || 1;
+  const pageSize = parseInt(req.query.limit as string) || 25;
+
   try {
-    const tasks = await taskRepository.getTasks();
+    const tasks = await taskRepository.getTasks(page, pageSize);
     res.status(200).json(tasks);
   } catch (error: any) {
     res.status(400).json({ message: error.message });
