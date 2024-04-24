@@ -2,7 +2,7 @@ import { Task } from "../model/task";
 
 const tasks: Task[] = [];
 
-export const getTasks = async (page: number, pageSize: number) => {
+export const getTasks = async (page: number = 0, pageSize: number = 0) => {
     return tasks;
 };
 

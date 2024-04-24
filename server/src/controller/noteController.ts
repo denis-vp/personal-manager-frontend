@@ -25,8 +25,11 @@ export const getNotes = async (req: Request, res: Response) => {
 
 export const getNotesByTaskId = async (req: Request, res: Response) => {
   const taskId = req.params.taskId;
+  const page = parseInt(req.query.page as string) || 1;
+  const pageSize = parseInt(req.query.limit as string) || 25;
+
   try {
-      const notes = await noteRepository.getNotesByTaskId(taskId);
+      const notes = await noteRepository.getNotesByTaskId(taskId, page, pageSize);
       res.status(200).json(notes);
   } catch (error: any) {
       res.status(400).json({ message: error.message });
@@ -34,8 +37,11 @@ export const getNotesByTaskId = async (req: Request, res: Response) => {
 };
 
 export const getUnassociatedNotes = async (req: Request, res: Response) => {
+  const page = parseInt(req.query.page as string) || 1;
+  const pageSize = parseInt(req.query.limit as string) || 25;
+  
   try {
-    const notes = await noteRepository.getUnassociatedNotes();
+    const notes = await noteRepository.getUnassociatedNotes(page, pageSize);
     res.status(200).json(notes);
   } catch (error: any) {
     res.status(400).json({ message: error.message });

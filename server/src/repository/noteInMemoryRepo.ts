@@ -2,15 +2,15 @@ import { Note } from "../model/note";
 
 const notes: Note[] = [];
 
-export const getNotes = async (page: number, pageSize: number) => {
+export const getNotes = async (page: number = 0, pageSize: number = 0) => {
     return notes;
 };
 
-export const getNotesByTaskId = async (taskId: string) => {
+export const getNotesByTaskId = async (taskId: string, page: number = 0, pageSize: number = 0) => {
     return notes.filter(note => note.associatedTaskId === taskId);
 };
 
-export const getUnassociatedNotes = async () => {
+export const getUnassociatedNotes = async (page: number = 0, pageSize: number = 0) => {
     return notes.filter(note => !note.associatedTaskId);
 };
 

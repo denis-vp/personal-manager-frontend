@@ -10,7 +10,7 @@ import {
   apiGetUnassociatedNotes,
   apiPatchNote,
 } from "../../utils/apiCalls";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import ListItem from "@mui/material/ListItem/ListItem";
 import ListItemText from "@mui/material/ListItemText/ListItemText";
 import Divider from "@mui/material/Divider/Divider";
@@ -34,25 +34,87 @@ function TaskAssociatedNotes({
   const [unassociatedNotes, setUnassociatedNotes] = useState<Note[]>([]);
   const { setOpenAlert, setAlertText } = useSnackBarStore();
 
-  useEffect(() => {
-    apiGetNotesByTaskId(task.id)
-      .then((response) => {
-        setAssociatedNotes(response.data);
-      })
-      .catch((_) => {
-        setAlertText("Network error");
-        setOpenAlert(true);
-      });
+  const [associatedPage, setAssociatedPage] = useState(1);
+  const associatedObserver = useRef<IntersectionObserver | null>(null);
+  const [unassociatedPage, setUnassociatedPage] = useState(1);
+  const unassociatedObserver = useRef<IntersectionObserver | null>(null);
 
-    apiGetUnassociatedNotes()
+  const lastAssociatedElementRef = useCallback((node: any) => {
+    if (associatedObserver.current) associatedObserver.current.disconnect();
+    associatedObserver.current = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting) {
+        setAssociatedPage((prev) => prev + 1);
+      }
+    });
+    if (node) associatedObserver.current.observe(node);
+  }, []);
+  const lastUnassociatedElementRef = useCallback((node: any) => {
+    if (unassociatedObserver.current) unassociatedObserver.current.disconnect();
+    unassociatedObserver.current = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting) {
+        setUnassociatedPage((prev) => prev + 1);
+      }
+    });
+    if (node) unassociatedObserver.current.observe(node);
+  }, []);
+
+  const [resetNotes, setResetNotes] = useState(false);
+
+  useEffect(() => {
+    setAssociatedNotes([]);
+    setUnassociatedNotes([]);
+    setAssociatedPage(1);
+    setUnassociatedPage(1);
+    setResetNotes(true);
+  }, [open]);
+
+  useEffect(() => {
+    if (resetNotes) {
+      loadAssociatedNotes();
+      setResetNotes(false);
+    }
+  }, [resetNotes]);
+
+  useEffect(() => {
+    if (!resetNotes) {
+      loadAssociatedNotes();
+    }
+  }, [associatedPage]);
+
+  useEffect(() => {
+    if (resetNotes) {
+      loadUnassociatedNotes();
+      setResetNotes(false);
+    }
+  }, [resetNotes]);
+
+  useEffect(() => {
+    if (!resetNotes) {
+      loadUnassociatedNotes();
+    }
+  }, [unassociatedPage]);
+
+  const loadAssociatedNotes = () => {
+    apiGetNotesByTaskId(task.id, associatedPage, 25)
       .then((response) => {
-        setUnassociatedNotes(response.data);
+        setAssociatedNotes([...associatedNotes, ...response.data]);
       })
       .catch((_) => {
         setAlertText("Network error");
         setOpenAlert(true);
       });
-  }, [open, associatedNotes]);
+  };
+
+  const loadUnassociatedNotes = () => {
+    apiGetUnassociatedNotes(unassociatedPage, 25)
+      .then((response) => {
+        setUnassociatedNotes([...unassociatedNotes, ...response.data]);
+      })
+      .catch((_) => {
+        setAlertText("Network error");
+        setOpenAlert(true);
+      });
+  };
 
   const removeAssociatedNote = (noteId: string) => {
     apiGetNote(noteId)
@@ -64,6 +126,7 @@ function TaskAssociatedNotes({
             setAssociatedNotes(
               associatedNotes.filter((note) => note.id !== noteId)
             );
+            setUnassociatedNotes([...unassociatedNotes, note]);
           })
           .catch((_) => {
             setAlertText("Network error");
@@ -83,6 +146,9 @@ function TaskAssociatedNotes({
         note.associatedTaskId = task.id;
         apiPatchNote(note)
           .then(() => {
+            setUnassociatedNotes(
+              unassociatedNotes.filter((note) => note.id !== noteId)
+            );
             setAssociatedNotes([...associatedNotes, note]);
           })
           .catch((_) => {
@@ -100,37 +166,64 @@ function TaskAssociatedNotes({
     <Dialog open={open} onClose={() => setOpen(false)}>
       <DialogTitle sx={{ alignSelf: "center" }}>Associated Notes</DialogTitle>
       <List>
-        {associatedNotes.map((note) => (
-          <ListItem disablePadding key={note.id}>
-            <ListItemButton onClick={() => removeAssociatedNote(note.id)}>
-              <ListItemText primary={note.title} />
-            </ListItemButton>
-          </ListItem>
-        ))}
+        {associatedNotes.map((note, index) => {
+          if (associatedNotes.length === index + 1) {
+            return (
+              <ListItem
+                disablePadding
+                key={note.id}
+                ref={lastAssociatedElementRef}
+              >
+                <ListItemButton onClick={() => removeAssociatedNote(note.id)}>
+                  <ListItemText primary={note.title} />
+                </ListItemButton>
+              </ListItem>
+            );
+          } else {
+            return (
+              <ListItem disablePadding key={note.id}>
+                <ListItemButton onClick={() => removeAssociatedNote(note.id)}>
+                  <ListItemText primary={note.title} />
+                </ListItemButton>
+              </ListItem>
+            );
+          }
+        })}
       </List>
 
       {associatedNotes.length === 0 && (
-        <Typography sx={{ alignSelf: "center", paddingBottom: "1em" }}>No notes associated</Typography>
+        <Typography sx={{ alignSelf: "center", paddingBottom: "1em" }}>
+          No notes associated
+        </Typography>
       )}
 
       <Divider />
 
       <DialogTitle sx={{ alignSelf: "center" }}>Available Notes</DialogTitle>
       <List>
-        {unassociatedNotes
-          .filter(
-            (note) =>
-              !associatedNotes.some(
-                (associatedNote) => associatedNote.id === note.id
-              )
-          )
-          .map((note) => (
-            <ListItem disablePadding key={note.id}>
-              <ListItemButton onClick={() => addAssociatedNote(note.id)}>
-                <ListItemText primary={note.title} />
-              </ListItemButton>
-            </ListItem>
-          ))}
+        {unassociatedNotes.map((note, index) => {
+          if (unassociatedNotes.length === index + 1) {
+            return (
+              <ListItem
+                disablePadding
+                key={note.id}
+                ref={lastUnassociatedElementRef}
+              >
+                <ListItemButton onClick={() => addAssociatedNote(note.id)}>
+                  <ListItemText primary={note.title} />
+                </ListItemButton>
+              </ListItem>
+            );
+          } else {
+            return (
+              <ListItem disablePadding key={note.id}>
+                <ListItemButton onClick={() => addAssociatedNote(note.id)}>
+                  <ListItemText primary={note.title} />
+                </ListItemButton>
+              </ListItem>
+            );
+          }
+        })}
       </List>
 
       {unassociatedNotes.length === 0 && (

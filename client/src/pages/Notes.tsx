@@ -15,6 +15,7 @@ function Notes() {
   const [selectedNoteId, setSelectedNoteId] = useState("");
   const [openCreate, setOpenCreate] = useState(false);
   const [openUpdate, setOpenUpdate] = useState(false);
+  
   const [page, setPage] = useState(1);
   const observer = useRef<IntersectionObserver | null>(null);
 

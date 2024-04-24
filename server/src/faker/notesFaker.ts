@@ -6,7 +6,7 @@ import noteRepository from "../repository/noteRepository";
 
 const generateNotes = async (count: number) => {
     const lorem = new LoremIpsum();
-    const tasks = await taskRepository.getTasks();
+    const tasks = await taskRepository.getTasks(1, 100);
 
     for (let i = 0; i < tasks.length; i++) {
         const task = tasks[i];

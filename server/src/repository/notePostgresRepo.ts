@@ -7,13 +7,15 @@ export const getNotes = async (page: number, pageSize: number) => {
     return result.rows;
 };
 
-export const getNotesByTaskId = async (taskId: string) => {
-    const result = await pool.query('SELECT * FROM public."notes" WHERE "associatedTaskId" = $1', [taskId]);
+export const getNotesByTaskId = async (taskId: string, page: number, pageSize: number) => {
+    const offset = (page - 1) * pageSize;
+    const result = await pool.query('SELECT * FROM public."notes" WHERE "associatedTaskId" = $1 ORDER BY id OFFSET $2 LIMIT $3', [taskId, offset, pageSize]);
     return result.rows;
 };
 
-export const getUnassociatedNotes = async () => {
-    const result = await pool.query('SELECT * FROM public."notes" WHERE "associatedTaskId" IS NULL');
+export const getUnassociatedNotes = async (page: number, pageSize: number) => {
+    const offset = (page - 1) * pageSize;
+    const result = await pool.query('SELECT * FROM public."notes" WHERE "associatedTaskId" IS NULL ORDER BY id OFFSET $1 LIMIT $2', [offset, pageSize]);
     return result.rows;
 };
 

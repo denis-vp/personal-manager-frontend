@@ -15,12 +15,12 @@ export const apiGetNotesOrderedByTitle = async (page: number, pageSize: number, 
     return await axios.get(server + `/notes?page=${page}&limit=${pageSize}&titleSortOrder=${sortOrder}`);
 }
 
-export const apiGetNotesByTaskId = async (taskId: string) => {
-    return await axios.get(server + `/notes/task/${taskId}`);
+export const apiGetNotesByTaskId = async (taskId: string, page: number, pageSize: number) => {
+    return await axios.get(server + `/notes/task/${taskId}?page=${page}&limit=${pageSize}`);
 }
 
-export const apiGetUnassociatedNotes = async () => {
-    return await axios.get(server + "/notes/unassociated");
+export const apiGetUnassociatedNotes = async (page: number, pageSize: number) => {
+    return await axios.get(server + "/notes/unassociated?page=" + page + "&limit=" + pageSize);
 }
 
 export const apiGetNote = async (id: string) => {

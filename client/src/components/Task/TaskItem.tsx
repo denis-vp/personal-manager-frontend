@@ -23,7 +23,7 @@ type TaskItemProps = {
 };
 
 function TaskItem({ task, selected, onEdit }: TaskItemProps) {
-  const { updateTask, deleteTask, setDirty } = useTaskStore();
+  const { updateTask, deleteTask } = useTaskStore();
   const { setOpenAlert, setAlertText } = useSnackBarStore();
   const [openAssociatedNotes, setOpenAssociatedNotes] = useState(false);
   const theme = useTheme();
@@ -34,16 +34,10 @@ function TaskItem({ task, selected, onEdit }: TaskItemProps) {
         setAlertText("Task deleted");
         setOpenAlert(true);
         deleteTask(id);
-        setDirty(false);
       })
       .catch((error) => {
-        if (!error.response) {
-          setAlertText("Network error");
-          deleteTask(id);
-          setDirty(true);
-        } else if (error.response.status === 404) {
+        if (error.response.status === 404) {
           setAlertText("Task not found");
-          setDirty(false);
         }
         setOpenAlert(true);
       });
@@ -55,20 +49,12 @@ function TaskItem({ task, selected, onEdit }: TaskItemProps) {
         setAlertText("Task updated");
         setOpenAlert(true);
         updateTask(response.data);
-        setDirty(false);
       })
       .catch((error) => {
-        if (!error.response) {
-          setAlertText("Network error");
-          updateTask(task);
-          setDirty(true);
-        }
         if (error.response.status === 404) {
           setAlertText("Task not found");
-          setDirty(false);
         } else if (error.response.status === 400) {
           setAlertText("Invalid task");
-          setDirty(false);
         }
         setOpenAlert(true);
       });
