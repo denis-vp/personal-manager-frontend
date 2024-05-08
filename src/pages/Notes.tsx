@@ -1,74 +1,125 @@
-import { Note, useNoteStore } from "../state/noteStore";
+import { DirtyNote, Note, useNoteStore } from "../state/noteStore";
 import NoteCard from "../components/Note/NoteCard";
 import Masonry from "@mui/lab/Masonry";
 import Fab from "@mui/material/Fab/Fab";
 import AddIcon from "@mui/icons-material/Add";
 import { useCallback, useEffect, useRef, useState } from "react";
 import NoteForm from "../components/Note/NoteForm";
-import { apiPatchNote, apiPostNote } from "../utils/apiCalls";
+import { apiPatchNote, apiPing, apiPostNote } from "../utils/apiCalls";
 import { useSnackBarStore } from "../state/snackBarStore";
+import { useServerStore } from "../state/serverStore";
 
 function Notes() {
-  const { loadNotes, getNotes, createNote, updateNote } =
-    useNoteStore();
+  const {
+    notePage,
+    getNotePage,
+    setNotePage,
+    loadNotesLocalStorage,
+    loadDirtyNotesLocalStorage,
+    loadNotes,
+    getNotes,
+    createNote,
+    updateNote,
+    deleteNote,
+    createDirtyNote,
+    updateDirtyNote,
+    isDirty,
+  } = useNoteStore();
+  const { getIsOnline } = useServerStore();
   const { setOpenAlert, setAlertText } = useSnackBarStore();
   const [selectedNoteId, setSelectedNoteId] = useState("");
   const [openCreate, setOpenCreate] = useState(false);
   const [openUpdate, setOpenUpdate] = useState(false);
-  
-  const [page, setPage] = useState(1);
+
+  useEffect(() => {
+    apiPing()
+      .then((response) => {
+        const isOnline = response.status === 200;
+        if (!isOnline) {
+          loadNotesLocalStorage();
+          loadDirtyNotesLocalStorage();
+        }
+      })
+      .catch(() => {
+        setAlertText("Using offline mode");
+        setOpenAlert(true);
+      });
+  }, []);
+
   const observer = useRef<IntersectionObserver | null>(null);
 
   const lastNoteElementRef = useCallback((node: any) => {
     if (observer.current) observer.current.disconnect();
     observer.current = new IntersectionObserver((entries) => {
       if (entries[0].isIntersecting) {
-        setPage((prev) => prev + 1);
+        setNotePage(getNotePage() + 1);
       }
     });
     if (node) observer.current.observe(node);
   }, []);
 
   useEffect(() => {
-    loadNotes(page, 25);
-  }, [page]);
+    loadNotes(getNotePage(), 25);
+  }, [notePage]);
 
   const createNoteLocal = (note: Note) => {
-    apiPostNote(note)
-      .then((response) => {
-        setAlertText("Note created");
-        setOpenAlert(true);
-        createNote(response.data);
-      })
-      .catch((error) => {
-        if (error.response.status === 400) {
-          setAlertText("Invalid note");
-        }
-        setOpenAlert(true);
-      })
-      .finally(() => {
-        setOpenCreate(false);
-      });
+    if (getIsOnline()) {
+      apiPostNote(note)
+        .then((response) => {
+          setAlertText("Note created");
+          setOpenAlert(true);
+          createNote(response.data);
+        })
+        .catch((error) => {
+          if (error.response.status === 400) {
+            setAlertText("Invalid note");
+            setOpenAlert(true);
+          }
+        });
+    } else {
+      const dirtyNote: DirtyNote = {
+        ...note,
+        existed: false,
+        deleted: false,
+      };
+      createDirtyNote(dirtyNote);
+      setAlertText("Dirty Note created");
+      setOpenAlert(true);
+    }
   };
 
   const updateNoteLocal = (note: Note) => {
-    apiPatchNote(note)
-      .then((response) => {
-        setAlertText("Note updated");
-        setOpenAlert(true);
-        updateNote(response.data);
-      })
-      .catch((error) => {
-        if (error.response.status === 404) {
-          setAlertText("Note not found");
-        } else if (error.response.status === 400) {
-          setAlertText("Invalid note");
-        }
-        setOpenAlert(true);
-      })
-      .finally(() => {
-        setOpenUpdate(false);
-      });
+    if (getIsOnline()) {
+      apiPatchNote(note)
+        .then((response) => {
+          setAlertText("Note updated");
+          setOpenAlert(true);
+          updateNote(response.data);
+        })
+        .catch((error) => {
+          if (error.response.status === 404) {
+            setAlertText("Note not found");
+            setOpenAlert(true);
+          } else if (error.response.status === 400) {
+            setAlertText("Invalid note");
+            setOpenAlert(true);
+          }
+        });
+    } else {
+      const dirtyNote: DirtyNote = {
+        ...note,
+        existed: true,
+        deleted: false,
+      };
+      if (!isDirty(note.id)) {
+        deleteNote(note.id);
+        createDirtyNote(dirtyNote);
+      } else {
+        updateDirtyNote(dirtyNote);
+      }
+      setAlertText("Dirty Note updated");
+      setOpenAlert(true);
+    }
   };
 
   return (

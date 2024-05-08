@@ -4,6 +4,12 @@ import { Task } from "../state/taskStore";
 
 const server = import.meta.env.VITE_SERVER as string;
 
+// -------------------------------- Utils --------------------------------
+
+export const apiPing = async () => {
+    return await axios.get(server + "/ping");
+}
+
 // -------------------------------- Notes --------------------------------
 
 export const apiGetNotes = async (page: number, pageSize: number) => {

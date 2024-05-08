@@ -9,7 +9,7 @@ import TaskForm from "../components/Task/TaskForm";
 import { apiPatchTask, apiPostTask } from "../utils/apiCalls";
 
 function Tasks() {
-  const { loadTasks, getTasks, createTask, updateTask } = useTaskStore();
+  const { loadTasks, setTasks, getTasks, createTask, updateTask } = useTaskStore();
   const { setOpenAlert, setAlertText } = useSnackBarStore();
   const [selectedNoteId, setSelectedNoteId] = useState("");
   const [openCreate, setOpenCreate] = useState(false);
@@ -29,6 +29,10 @@ function Tasks() {
   }, []);
 
   useEffect(() => {
+    setTasks([]);
+  }, []);
+
+  useEffect(() => {
     loadTasks(page, 25);
   }, [page]);
 
@@ -42,8 +46,8 @@ function Tasks() {
       .catch((error) => {
         if (error.response.status === 400) {
           setAlertText("Invalid task");
+          setOpenAlert(true);
         }
-        setOpenAlert(true);
       })
       .finally(() => {
         setOpenCreate(false);
@@ -60,10 +64,11 @@ function Tasks() {
       .catch((error) => {
         if (error.response.status === 404) {
           setAlertText("Task not found");
+          setOpenAlert(true);
         } else if (error.response.status === 400) {
           setAlertText("Invalid task");
+          setOpenAlert(true);
         }
-        setOpenAlert(true);
       })
       .finally(() => {
         setOpenUpdate(false);

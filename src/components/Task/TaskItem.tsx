@@ -38,8 +38,8 @@ function TaskItem({ task, selected, onEdit }: TaskItemProps) {
       .catch((error) => {
         if (error.response.status === 404) {
           setAlertText("Task not found");
+          setOpenAlert(true);
         }
-        setOpenAlert(true);
       });
   };
 
@@ -53,10 +53,11 @@ function TaskItem({ task, selected, onEdit }: TaskItemProps) {
       .catch((error) => {
         if (error.response.status === 404) {
           setAlertText("Task not found");
+          setOpenAlert(true);
         } else if (error.response.status === 400) {
           setAlertText("Invalid task");
+          setOpenAlert(true);
         }
-        setOpenAlert(true);
       });
   };
 

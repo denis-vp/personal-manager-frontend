@@ -1,8 +1,6 @@
 import { create } from "zustand";
 import { apiGetTasks } from "../utils/apiCalls";
 
-const tasksLocalStorage = import.meta.env.VITE_TASKS_LOCAL_STORAGE as string;
-
 export type Task = {
   id: string;
   title: string;
