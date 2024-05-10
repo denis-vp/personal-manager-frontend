@@ -5,10 +5,10 @@ import DialogContent from "@mui/material/DialogContent/DialogContent";
 import DialogTitle from "@mui/material/DialogTitle/DialogTitle";
 import TextField from "@mui/material/TextField/TextField";
 import { useEffect, useState } from "react";
-import { Note } from "../../state/noteStore";
 import { v4 as uuidv4 } from "uuid";
 import { validateNote } from "../../validators/noteValidator";
 import { useSnackBarStore } from "../../state/snackBarStore";
+import { Note } from "../../state/noteStore";
 
 type NoteFormProps = {
   text: string;
@@ -27,10 +27,11 @@ function NoteForm({
   onConfirm,
   note,
 }: NoteFormProps) {
+  const { setOpenAlert, setAlertText } = useSnackBarStore();
+
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState("");
   const [content, setContent] = useState("");
-  const { setOpenAlert, setAlertText } = useSnackBarStore();
 
   useEffect(() => {
     if (note) {
@@ -64,13 +65,19 @@ function NoteForm({
       date: new Date().toISOString().slice(0, 10),
       associatedTaskId: note?.associatedTaskId || null,
     };
-    if (validateNote(newNote)) {
-      onConfirm(newNote);
-      handleClose();
-    } else {
-      setAlertText("Invalid note");
-      setOpenAlert(true);
+
+    try {
+      validateNote(newNote);
+    } catch (error) {
+      if (error instanceof Error) {
+        setAlertText("Invalid note: " + error.message);
+        setOpenAlert(true);
+      }
+      return;
     }
+
+    onConfirm(newNote);
+    handleClose();
   };
 
   return (

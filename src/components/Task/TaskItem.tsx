@@ -1,6 +1,4 @@
-import { useSnackBarStore } from "../../state/snackBarStore";
 import EditIcon from "@mui/icons-material/Edit";
-import { Task, useTaskStore } from "../../state/taskStore";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import CardHeader from "@mui/material/CardHeader";
@@ -8,13 +6,15 @@ import IconButton from "@mui/material/IconButton";
 import Typography from "@mui/material/Typography";
 import { useTheme } from "@mui/material/styles";
 import { DeleteOutline } from "@mui/icons-material";
-import { apiDeleteTask, apiPatchTask } from "../../utils/apiCalls";
 import dayjs from "dayjs";
 import NotesIcon from "@mui/icons-material/Notes";
 import Divider from "@mui/material/Divider/Divider";
 import { Checkbox, FormControlLabel, Stack } from "@mui/material";
 import TaskAssociatedNotes from "./TaskAssociatedNotes";
 import { useState } from "react";
+import { Task, useTaskStore } from "../../state/taskStore";
+import { useApiStore } from "../../state/apiStore";
+import { useSnackBarStore } from "../../state/snackBarStore";
 
 type TaskItemProps = {
   task: Task;
@@ -23,41 +23,30 @@ type TaskItemProps = {
 };
 
 function TaskItem({ task, selected, onEdit }: TaskItemProps) {
-  const { updateTask, deleteTask } = useTaskStore();
-  const { setOpenAlert, setAlertText } = useSnackBarStore();
+  const { deleteTask: deletTaskApi } = useApiStore();
+  const { updateTask, deleteTask: deleteTaskStore } = useTaskStore();
+  const { setAlertText, setOpenAlert } = useSnackBarStore();
+
   const [openAssociatedNotes, setOpenAssociatedNotes] = useState(false);
+
   const theme = useTheme();
 
   const deleteTaskLocal = (id: string) => {
-    apiDeleteTask(id)
-      .then(() => {
-        setAlertText("Task deleted");
-        setOpenAlert(true);
-        deleteTask(id);
-      })
-      .catch((error) => {
-        if (error.response.status === 404) {
-          setAlertText("Task not found");
-          setOpenAlert(true);
-        }
-      });
-  };
-
-  const updateTaskLocal = (task: Task) => {
-    apiPatchTask(task)
+    deletTaskApi(id)
       .then((response) => {
-        setAlertText("Task updated");
-        setOpenAlert(true);
-        updateTask(response.data);
-      })
-      .catch((error) => {
-        if (error.response.status === 404) {
+        if (response.status === 204) {
+          deleteTaskStore(id);
+        } else if (response.status === 404) {
           setAlertText("Task not found");
           setOpenAlert(true);
-        } else if (error.response.status === 400) {
-          setAlertText("Invalid task");
+        } else {
+          setAlertText("Failed to delete task");
           setOpenAlert(true);
         }
+      })
+      .catch((error) => {
+        setAlertText(error.message);
+        setOpenAlert(true);
       });
   };
 
@@ -66,7 +55,7 @@ function TaskItem({ task, selected, onEdit }: TaskItemProps) {
       ...task,
       isFinished: !task.isFinished,
     };
-    updateTaskLocal(newTask);
+    updateTask(newTask);
   };
 
   return (

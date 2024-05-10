@@ -1,15 +1,7 @@
 import Dialog from "@mui/material/Dialog/Dialog";
-import { Note } from "../../state/noteStore";
 import { useSnackBarStore } from "../../state/snackBarStore";
-import { Task } from "../../state/taskStore";
 import DialogTitle from "@mui/material/DialogTitle/DialogTitle";
 import List from "@mui/material/List/List";
-import {
-  apiGetNote,
-  apiGetNotesByTaskId,
-  apiGetUnassociatedNotes,
-  apiPatchNote,
-} from "../../utils/apiCalls";
 import { useCallback, useEffect, useRef, useState } from "react";
 import ListItem from "@mui/material/ListItem/ListItem";
 import ListItemText from "@mui/material/ListItemText/ListItemText";
@@ -18,6 +10,11 @@ import ListItemButton from "@mui/material/ListItemButton/ListItemButton";
 import Button from "@mui/material/Button/Button";
 import DialogActions from "@mui/material/DialogActions/DialogActions";
 import Typography from "@mui/material/Typography/Typography";
+import { useApiStore } from "../../state/apiStore";
+import { Note } from "../../state/noteStore";
+import { Task } from "../../state/taskStore";
+
+const PAGE_SIZE = 25;
 
 type TaskAssociatedNotesProps = {
   task: Task;
@@ -30,16 +27,18 @@ function TaskAssociatedNotes({
   open,
   setOpen,
 }: TaskAssociatedNotesProps) {
+  const { getNotesByTaskId, getUnassociatedNotes, getNote, patchNote } = useApiStore();
+  const { setOpenAlert, setAlertText } = useSnackBarStore();
+
   const [associatedNotes, setAssociatedNotes] = useState<Note[]>([]);
   const [unassociatedNotes, setUnassociatedNotes] = useState<Note[]>([]);
-  const { setOpenAlert, setAlertText } = useSnackBarStore();
 
   const [associatedPage, setAssociatedPage] = useState(1);
   const associatedObserver = useRef<IntersectionObserver | null>(null);
   const [unassociatedPage, setUnassociatedPage] = useState(1);
   const unassociatedObserver = useRef<IntersectionObserver | null>(null);
 
-  const lastAssociatedElementRef = useCallback((node: any) => {
+  const lastAssociatedElementRef = useCallback((node: HTMLElement | null) => {
     if (associatedObserver.current) associatedObserver.current.disconnect();
     associatedObserver.current = new IntersectionObserver((entries) => {
       if (entries[0].isIntersecting) {
@@ -48,7 +47,8 @@ function TaskAssociatedNotes({
     });
     if (node) associatedObserver.current.observe(node);
   }, []);
-  const lastUnassociatedElementRef = useCallback((node: any) => {
+
+  const lastUnassociatedElementRef = useCallback((node: HTMLElement | null) => {
     if (unassociatedObserver.current) unassociatedObserver.current.disconnect();
     unassociatedObserver.current = new IntersectionObserver((entries) => {
       if (entries[0].isIntersecting) {
@@ -95,68 +95,68 @@ function TaskAssociatedNotes({
   }, [unassociatedPage]);
 
   const loadAssociatedNotes = () => {
-    apiGetNotesByTaskId(task.id, associatedPage, 25)
+    getNotesByTaskId(associatedPage, PAGE_SIZE, task.id)
       .then((response) => {
         setAssociatedNotes([...associatedNotes, ...response.data]);
       })
-      .catch((_) => {
+      .catch(() => {
         setAlertText("Network error");
         setOpenAlert(true);
       });
   };
 
   const loadUnassociatedNotes = () => {
-    apiGetUnassociatedNotes(unassociatedPage, 25)
+    getUnassociatedNotes(unassociatedPage, PAGE_SIZE)
       .then((response) => {
         setUnassociatedNotes([...unassociatedNotes, ...response.data]);
       })
-      .catch((_) => {
+      .catch(() => {
         setAlertText("Network error");
         setOpenAlert(true);
       });
   };
 
   const removeAssociatedNote = (noteId: string) => {
-    apiGetNote(noteId)
+    getNote(noteId)
       .then((response) => {
         const note = response.data;
         note.associatedTaskId = null;
-        apiPatchNote(note)
+        patchNote(note)
           .then(() => {
             setAssociatedNotes(
               associatedNotes.filter((note) => note.id !== noteId)
             );
             setUnassociatedNotes([...unassociatedNotes, note]);
           })
-          .catch((_) => {
+          .catch(() => {
             setAlertText("Network error");
             setOpenAlert(true);
           });
       })
-      .catch((_) => {
+      .catch(() => {
         setAlertText("Network error");
         setOpenAlert(true);
       });
   };
 
   const addAssociatedNote = (noteId: string) => {
-    apiGetNote(noteId)
+    getNote(noteId)
       .then((response) => {
         const note = response.data;
         note.associatedTaskId = task.id;
-        apiPatchNote(note)
+        patchNote(note)
           .then(() => {
             setUnassociatedNotes(
               unassociatedNotes.filter((note) => note.id !== noteId)
             );
             setAssociatedNotes([...associatedNotes, note]);
           })
-          .catch((_) => {
+          .catch(() => {
             setAlertText("Network error");
             setOpenAlert(true);
           });
       })
-      .catch((_) => {
+      .catch(() => {
         setAlertText("Network error");
         setOpenAlert(true);
       });

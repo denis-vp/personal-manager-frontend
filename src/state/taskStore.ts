@@ -1,5 +1,4 @@
 import { create } from "zustand";
-import { apiGetTasks } from "../utils/apiCalls";
 
 export type Task = {
   id: string;
@@ -13,37 +12,30 @@ export type Task = {
 
 type TaskStore = {
   tasks: Task[];
-  loadTasks: (page: number, pageSize: number) => void;
-  getTasks: () => Task[];
+  setTasks: (tasks: Task[]) => void;
   getTask: (id: string) => Task | undefined;
-  setTasks: (expenses: Task[]) => void;
-  createTask: (expense: Task) => void;
-  updateTask: (expense: Task) => void;
+
+  createTask: (task: Task) => void;
+  updateTask: (task: Task) => void;
   deleteTask: (id: string) => void;
 };
 
-export const useTaskStore = create<TaskStore>()((set, get) => ({
-  tasks: [],
-  dirty: false,
-  loadTasks: (page: number, pageSize: number) => {
-    apiGetTasks(page, pageSize)
-      .then((response) => {
-        set({ tasks: [...get().tasks, ...response.data] });
-      })
-      .catch((_) => {});
-  },
-  getTasks: () => get().tasks,
-  getTask: (id: string) => get().tasks.find((e) => e.id === id),
-  setTasks: (expenses: Task[]) => set({ tasks: expenses }),
-  createTask: (expense: Task) => {
-    set({ tasks: [...get().tasks, expense] });
-  },
-  updateTask: (expense: Task) => {
-    set({
-      tasks: get().tasks.map((e) => (e.id === expense.id ? expense : e)),
-    });
-  },
-  deleteTask: (id: string) => {
-    set({ tasks: get().tasks.filter((e) => e.id !== id) });
-  },
-}));
+export const useTaskStore = create<TaskStore>()((set, get) => {
+  return {
+    tasks: [],
+    setTasks: (tasks: Task[]) => set({ tasks }),
+    getTask: (id: string) => get().tasks.find((t) => t.id === id),
+
+    createTask: (task: Task) => {
+      set({ tasks: [...get().tasks, task] });
+    },
+    updateTask: (task: Task) => {
+      set({
+        tasks: get().tasks.map((t) => (t.id === task.id ? task : t)),
+      });
+    },
+    deleteTask: (id: string) => {
+      set({ tasks: get().tasks.filter((t) => t.id !== id) });
+    },
+  };
+});

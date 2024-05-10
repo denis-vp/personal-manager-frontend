@@ -1,24 +1,54 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Task, useTaskStore } from "../state/taskStore";
-import { useSnackBarStore } from "../state/snackBarStore";
 import Stack from "@mui/material/Stack/Stack";
 import TaskItem from "../components/Task/TaskItem";
 import AddIcon from "@mui/icons-material/Add";
 import Fab from "@mui/material/Fab/Fab";
 import TaskForm from "../components/Task/TaskForm";
-import { apiPatchTask, apiPostTask } from "../utils/apiCalls";
+import { Task, useTaskStore } from "../state/taskStore";
+import { useApiStore } from "../state/apiStore";
+import { useSnackBarStore } from "../state/snackBarStore";
+
+const PAGE_SIZE = 50;
 
 function Tasks() {
-  const { loadTasks, setTasks, getTasks, createTask, updateTask } = useTaskStore();
+  const { getTasks, postTask, patchTask } = useApiStore();
+  const { tasks, setTasks, getTask, createTask, updateTask } = useTaskStore();
   const { setOpenAlert, setAlertText } = useSnackBarStore();
+
   const [selectedNoteId, setSelectedNoteId] = useState("");
   const [openCreate, setOpenCreate] = useState(false);
   const [openUpdate, setOpenUpdate] = useState(false);
-  
+
   const [page, setPage] = useState(1);
+
+  const loadTasks = () => {
+    getTasks(page, PAGE_SIZE)
+      .then((response) => {
+        if (response.status === 200) {
+          // Make sure an added task is not loaded again when the next page is loaded
+          const newTasks = [...tasks, ...response.data];
+          const uniqueTasks = Array.from(
+            new Set(newTasks.map((task) => task.id))
+          ).map((id) => newTasks.find((task) => task.id === id));
+          setTasks(uniqueTasks);
+        } else {
+          setAlertText("Failed to load tasks");
+          setOpenAlert(true);
+        }
+      })
+      .catch((error) => {
+        setAlertText(error.message);
+        setOpenAlert(true);
+      });
+  };
+
+  useEffect(() => {
+    loadTasks();
+  }, [page]);
+
   const observer = useRef<IntersectionObserver | null>(null);
 
-  const lastNoteElementRef = useCallback((node: any) => {
+  const lastNoteElementRef = useCallback((node: HTMLElement | null) => {
     if (observer.current) observer.current.disconnect();
     observer.current = new IntersectionObserver((entries) => {
       if (entries[0].isIntersecting) {
@@ -28,83 +58,60 @@ function Tasks() {
     if (node) observer.current.observe(node);
   }, []);
 
-  useEffect(() => {
-    setTasks([]);
-  }, []);
-
-  useEffect(() => {
-    loadTasks(page, 25);
-  }, [page]);
-
   const createTaskLocal = (task: Task) => {
-    apiPostTask(task)
+    postTask(task)
       .then((response) => {
-        setAlertText("Task created");
-        setOpenAlert(true);
-        createTask(response.data);
-      })
-      .catch((error) => {
-        if (error.response.status === 400) {
+        if (response.status === 201) {
+          createTask(response.data);
+        } else if (response.status === 400) {
           setAlertText("Invalid task");
+          setOpenAlert(true);
+        } else {
+          setAlertText("Failed to create task");
           setOpenAlert(true);
         }
       })
-      .finally(() => {
-        setOpenCreate(false);
+      .catch((error) => {
+        setAlertText(error.message);
+        setOpenAlert(true);
       });
   };
 
   const updateTaskLocal = (task: Task) => {
-    apiPatchTask(task)
+    patchTask(task)
       .then((response) => {
-        setAlertText("Task updated");
-        setOpenAlert(true);
-        updateTask(response.data);
-      })
-      .catch((error) => {
-        if (error.response.status === 404) {
-          setAlertText("Task not found");
-          setOpenAlert(true);
-        } else if (error.response.status === 400) {
+        if (response.status === 200) {
+          updateTask(response.data);
+        } else if (response.status === 400) {
           setAlertText("Invalid task");
+          setOpenAlert(true);
+        } else {
+          setAlertText("Failed to update task");
           setOpenAlert(true);
         }
       })
-      .finally(() => {
-        setOpenUpdate(false);
+      .catch((error) => {
+        setAlertText(error.message);
+        setOpenAlert(true);
       });
   };
 
   return (
     <>
       <Stack spacing={2}>
-        {getTasks().map((task, index) => {
-          if (getTasks().length === index + 1) {
-            return (
-              <div
-                ref={lastNoteElementRef}
-                key={task.id}
-                onClick={() => setSelectedNoteId(task.id)}
-              >
-                <TaskItem
-                  task={task}
-                  selected={selectedNoteId === task.id}
-                  onEdit={() => setOpenUpdate(true)}
-                />
-              </div>
-            );
-          } else {
-            return (
-              <div key={task.id} onClick={() => setSelectedNoteId(task.id)}>
-                <TaskItem
-                  task={task}
-                  selected={selectedNoteId === task.id}
-                  onEdit={() => setOpenUpdate(true)}
-                />
-              </div>
-            );
-          }
-        })}
+        {tasks.map((task, index) => (
+          <div
+            key={task.id}
+            onClick={() => setSelectedNoteId(task.id)}
+            ref={tasks.length === index + 1 ? lastNoteElementRef : null}
+          >
+            <TaskItem
+              task={task}
+              selected={selectedNoteId === task.id}
+              onEdit={() => setOpenUpdate(true)}
+            />
+          </div>
+        ))}
       </Stack>
 
       <Fab
@@ -121,15 +128,15 @@ function Tasks() {
         confirmText="Add"
         open={openCreate}
         setOpen={setOpenCreate}
-        onConfirm={(task) => createTaskLocal(task)}
+        onConfirm={createTaskLocal}
       />
       <TaskForm
         text="Edit task"
         confirmText="Edit"
         open={openUpdate}
         setOpen={setOpenUpdate}
-        onConfirm={(task) => updateTaskLocal(task)}
-        task={getTasks().filter((t) => t.id === selectedNoteId)[0]}
+        onConfirm={updateTaskLocal}
+        task={getTask(selectedNoteId)}
       />
     </>
   );

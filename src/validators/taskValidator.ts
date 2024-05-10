@@ -1,10 +1,19 @@
 import { Task } from "../state/taskStore";
 
 export const validateTask = (task: Task) => {
-    if (task.title === "" || task.content === "") {
-        return false;
-    } else if (!["low", "medium", "high", ""].includes(task.priority)) {
-        return false;
+    const errors = [];
+
+    if (task.title === "") {
+        errors.push("Title is required");
     }
-    return true;
-}
+    if (task.content === "") {
+        errors.push("Content is required");
+    }
+    if (!["low", "medium", "high", ""].includes(task.priority)) {
+        errors.push("Priority must be low, medium, or high");
+    }
+
+    if (errors.length > 0) {
+        throw new Error(errors.join(", "));
+    }
+};

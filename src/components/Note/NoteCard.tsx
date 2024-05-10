@@ -1,5 +1,4 @@
 import Card from "@mui/material/Card/Card";
-import { DirtyNote, Note, useNoteStore } from "../../state/noteStore";
 import IconButton from "@mui/material/IconButton/IconButton";
 import CardHeader from "@mui/material/CardHeader/CardHeader";
 import { DeleteOutline } from "@mui/icons-material";
@@ -7,9 +6,9 @@ import EditIcon from "@mui/icons-material/Edit";
 import CardContent from "@mui/material/CardContent/CardContent";
 import Typography from "@mui/material/Typography/Typography";
 import { useTheme } from "@mui/material/styles";
+import { Note, useNoteStore } from "../../state/noteStore";
+import { useApiStore } from "../../state/apiStore";
 import { useSnackBarStore } from "../../state/snackBarStore";
-import { apiDeleteNote } from "../../utils/apiCalls";
-import { useServerStore } from "../../state/serverStore";
 
 type NoteCardProps = {
   note: Note;
@@ -18,41 +17,30 @@ type NoteCardProps = {
 };
 
 function NoteCard({ note, selected, onEdit }: NoteCardProps) {
-  const { createDirtyNote, deleteNote, deleteDirtyNote, isDirty } = useNoteStore();
-  const { getIsOnline } = useServerStore();
-  const { setOpenAlert, setAlertText } = useSnackBarStore();
+  const { deleteNote: deleteNoteApi } = useApiStore();
+  const { deleteNote: deleteNoteStore } = useNoteStore();
+  const { setAlertText, setOpenAlert } = useSnackBarStore();
+
   const theme = useTheme();
 
   const deleteNoteLocal = (id: string) => {
-    if (getIsOnline()) {
-      apiDeleteNote(id)
-      .then(() => {
-        setAlertText("Note deleted");
+    deleteNoteApi(id)
+    .then((response) => {
+      if (response.status === 204) {
+        deleteNoteStore(id);
+      } else if (response.status === 404) {
+        setAlertText("Note not found");
         setOpenAlert(true);
-        deleteNote(id);
-      })
-      .catch((error) => {
-        if (error.response.status === 404) {
-          setAlertText("Note not found");
-          setOpenAlert(true);
-        }
-      });
-    } else {
-      if (!isDirty(id)) {
-        const dirtyNote: DirtyNote = {
-          ...note,
-          existed: true,
-          deleted: true,
-        };
-        createDirtyNote(dirtyNote);
-        deleteNote(id);
       } else {
-        deleteDirtyNote(id);
+        setAlertText("Failed to delete note");
+        setOpenAlert(true);
       }
-      setAlertText("Dirty Note deleted");
+    })
+    .catch((error) => {
+      setAlertText(error.message);
       setOpenAlert(true);
-    }
-  };
+    });
+  }
 
   return (
     <Card

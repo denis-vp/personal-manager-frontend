@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
-import { Task } from "../../state/taskStore";
 import Dialog from "@mui/material/Dialog/Dialog";
 import DialogTitle from "@mui/material/DialogTitle/DialogTitle";
 import DialogContent from "@mui/material/DialogContent/DialogContent";
@@ -21,6 +20,7 @@ import { validateTask } from "../../validators/taskValidator";
 import { useSnackBarStore } from "../../state/snackBarStore";
 import dayjs from "dayjs";
 import { IconButton } from "@mui/material";
+import { Task } from "../../state/taskStore";
 
 type TaskFormProps = {
   text: string;
@@ -39,17 +39,18 @@ function TaskForm({
   onConfirm,
   task,
 }: TaskFormProps) {
+  const { setOpenAlert, setAlertText } = useSnackBarStore();
+
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState("");
   const [priority, setPriority] = useState("");
   const [isFinished, setIsFinished] = useState(false);
   const [dueDate, setDueDate] = useState<string | null>(null);
   const [content, setContent] = useState("");
-  const { setOpenAlert, setAlertText } = useSnackBarStore();
 
   useEffect(() => {
     if (task) {
-      setTitle(task.title); 
+      setTitle(task.title);
       setCategory(task.category);
       setContent(task.content);
       setIsFinished(task.isFinished);
@@ -92,13 +93,19 @@ function TaskForm({
       dueDate: dueDate !== "" ? dueDate : null,
       priority: priority,
     };
-    if (validateTask(newTask)) {
-      onConfirm(newTask);
-      handleClose();
-    } else {
-      setAlertText("Invalid task");
-      setOpenAlert(true);
+
+    try {
+      validateTask(newTask);
+    } catch (error) {
+      if (error instanceof Error) {
+        setAlertText("Invalid task: " + error.message);
+        setOpenAlert(true);
+      }
+      return;
     }
+
+    onConfirm(newTask);
+    handleClose();
   };
 
   return (

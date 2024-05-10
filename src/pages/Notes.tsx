@@ -1,157 +1,121 @@
-import { DirtyNote, Note, useNoteStore } from "../state/noteStore";
 import NoteCard from "../components/Note/NoteCard";
 import Masonry from "@mui/lab/Masonry";
 import Fab from "@mui/material/Fab/Fab";
 import AddIcon from "@mui/icons-material/Add";
 import { useCallback, useEffect, useRef, useState } from "react";
 import NoteForm from "../components/Note/NoteForm";
-import { apiPatchNote, apiPing, apiPostNote } from "../utils/apiCalls";
+import { Note, useNoteStore } from "../state/noteStore";
+import { useApiStore } from "../state/apiStore";
 import { useSnackBarStore } from "../state/snackBarStore";
-import { useServerStore } from "../state/serverStore";
+
+const PAGE_SIZE = 50;
 
 function Notes() {
-  const {
-    notePage,
-    getNotePage,
-    setNotePage,
-    loadNotesLocalStorage,
-    loadDirtyNotesLocalStorage,
-    loadNotes,
-    getNotes,
-    createNote,
-    updateNote,
-    deleteNote,
-    createDirtyNote,
-    updateDirtyNote,
-    isDirty,
-  } = useNoteStore();
-  const { getIsOnline } = useServerStore();
+  const { getNotes, postNote, patchNote } = useApiStore();
+  const { notes, setNotes, getNote, createNote, updateNote } = useNoteStore();
   const { setOpenAlert, setAlertText } = useSnackBarStore();
+
   const [selectedNoteId, setSelectedNoteId] = useState("");
   const [openCreate, setOpenCreate] = useState(false);
   const [openUpdate, setOpenUpdate] = useState(false);
 
-  useEffect(() => {
-    apiPing()
+  const [page, setPage] = useState(1);
+
+  const loadNotes = () => {
+    getNotes(page, PAGE_SIZE)
       .then((response) => {
-        const isOnline = response.status === 200;
-        if (!isOnline) {
-          loadNotesLocalStorage();
-          loadDirtyNotesLocalStorage();
+        if (response.status === 200) {
+          // Make sure an added note is not loaded again when the next page is loaded
+          const newNotes = [...notes, ...response.data];
+          const uniqueNotes = Array.from(
+            new Set(newNotes.map((note) => note.id))
+          ).map((id) => newNotes.find((note) => note.id === id));
+          setNotes(uniqueNotes);
+        } else {
+          setAlertText("Failed to load notes");
+          setOpenAlert(true);
         }
       })
-      .catch(() => {
-        setAlertText("Using offline mode");
+      .catch((error) => {
+        setAlertText(error.message);
         setOpenAlert(true);
       });
-  }, []);
+  };
+
+  useEffect(() => {
+    loadNotes();
+  }, [page]);
 
   const observer = useRef<IntersectionObserver | null>(null);
 
-  const lastNoteElementRef = useCallback((node: any) => {
+  const lastNoteElementRef = useCallback((node: HTMLElement | null) => {
     if (observer.current) observer.current.disconnect();
     observer.current = new IntersectionObserver((entries) => {
       if (entries[0].isIntersecting) {
-        setNotePage(getNotePage() + 1);
+        setPage((prev) => prev + 1);
       }
     });
     if (node) observer.current.observe(node);
   }, []);
 
-  useEffect(() => {
-    loadNotes(getNotePage(), 25);
-  }, [notePage]);
-
   const createNoteLocal = (note: Note) => {
-    if (getIsOnline()) {
-      apiPostNote(note)
+    postNote(note)
         .then((response) => {
-          setAlertText("Note created");
-          setOpenAlert(true);
-          createNote(response.data);
-        })
-        .catch((error) => {
-          if (error.response.status === 400) {
+          if (response.status === 201) {
+            createNote(response.data);
+            setAlertText("Note created");
+            setOpenAlert(true);
+          } else if (response.status === 400) {
             setAlertText("Invalid note");
             setOpenAlert(true);
+          } else {
+            setAlertText("Failed to create note");
+            setOpenAlert(true);
           }
+        })
+        .catch((error) => {
+          setAlertText(error.message);
+          setOpenAlert(true);
         });
-    } else {
-      const dirtyNote: DirtyNote = {
-        ...note,
-        existed: false,
-        deleted: false,
-      };
-      createDirtyNote(dirtyNote);
-      setAlertText("Dirty Note created");
-      setOpenAlert(true);
-    }
   };
 
   const updateNoteLocal = (note: Note) => {
-    if (getIsOnline()) {
-      apiPatchNote(note)
+    patchNote(note)
         .then((response) => {
-          setAlertText("Note updated");
-          setOpenAlert(true);
-          updateNote(response.data);
-        })
-        .catch((error) => {
-          if (error.response.status === 404) {
-            setAlertText("Note not found");
+          if (response.status === 200) {
+            updateNote(response.data);
+            setAlertText("Note updated");
             setOpenAlert(true);
-          } else if (error.response.status === 400) {
+          } else if (response.status === 400) {
             setAlertText("Invalid note");
             setOpenAlert(true);
+          } else if (response.status === 404) {
+            setAlertText("Note not found");
+            setOpenAlert(true);
           }
+        })
+        .catch((error) => {
+          setAlertText(error.message);
+          setOpenAlert(true);
         });
-    } else {
-      const dirtyNote: DirtyNote = {
-        ...note,
-        existed: true,
-        deleted: false,
-      };
-      if (!isDirty(note.id)) {
-        deleteNote(note.id);
-        createDirtyNote(dirtyNote);
-      } else {
-        updateDirtyNote(dirtyNote);
-      }
-      setAlertText("Dirty Note updated");
-      setOpenAlert(true);
-    }
   };
 
   return (
     <>
       <Masonry columns={3} spacing={3} sx={{ margin: 0, padding: 0 }}>
-        {getNotes().map((note, index) => {
-          if (getNotes().length === index + 1) {
-            return (
-              <div
-                ref={lastNoteElementRef}
-                key={note.id}
-                onClick={() => setSelectedNoteId(note.id)}
-              >
-                <NoteCard
-                  note={note}
-                  selected={selectedNoteId === note.id}
-                  onEdit={() => setOpenUpdate(true)}
-                />
-              </div>
-            );
-          } else {
-            return (
-              <div key={note.id} onClick={() => setSelectedNoteId(note.id)}>
-                <NoteCard
-                  note={note}
-                  selected={selectedNoteId === note.id}
-                  onEdit={() => setOpenUpdate(true)}
-                />
-              </div>
-            );
-          }
-        })}
+        {notes.map((note, index) => (
+          <div
+            key={note.id}
+            onClick={() => setSelectedNoteId(note.id)}
+            ref={notes.length === index + 1 ? lastNoteElementRef : null}
+          >
+            <NoteCard
+              note={note}
+              selected={selectedNoteId === note.id}
+              onEdit={() => setOpenUpdate(true)}
+            />
+          </div>
+        ))}
       </Masonry>
 
       <Fab
@@ -168,15 +132,15 @@ function Notes() {
         confirmText="Add"
         open={openCreate}
         setOpen={setOpenCreate}
-        onConfirm={(note) => createNoteLocal(note)}
+        onConfirm={createNoteLocal}
       />
       <NoteForm
         text="Edit note"
         confirmText="Edit"
         open={openUpdate}
         setOpen={setOpenUpdate}
-        onConfirm={(note) => updateNoteLocal(note)}
-        note={getNotes().filter((n) => n.id === selectedNoteId)[0]}
+        onConfirm={updateNoteLocal}
+        note={getNote(selectedNoteId)}
       />
     </>
   );
