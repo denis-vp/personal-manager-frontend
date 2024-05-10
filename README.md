@@ -10,4 +10,4 @@ Follow these steps to install the project:
 
 ## Running the Project
 
-To run the frontend, make sure you are in the `client` directory and run `npm run dev` or `yarn dev`.
+To run use the command `npm run dev` or `yarn dev`.
