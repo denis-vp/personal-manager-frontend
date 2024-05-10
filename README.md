@@ -1,4 +1,4 @@
-# Personal Manager
+# Personal Manager Frontend
 
 ## Installation
 
