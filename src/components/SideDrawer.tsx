@@ -11,8 +11,8 @@ import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import BarChartIcon from "@mui/icons-material/BarChart";
 import SettingsIcon from "@mui/icons-material/Settings";
 import NotesIcon from "@mui/icons-material/Notes";
-import EventIcon from '@mui/icons-material/Event';
-import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
+import EventIcon from "@mui/icons-material/Event";
+import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
 import TaskAltIcon from "@mui/icons-material/TaskAlt";
 import Stack from "@mui/material/Stack/Stack";
 import Avatar from "@mui/material/Avatar/Avatar";
@@ -24,7 +24,7 @@ const drawerItems1 = [
   {
     text: "Dashboard",
     icon: <DashboardIcon />,
-    path: "/",
+    path: "/dashboard",
   },
   {
     text: "Tasks",
@@ -80,9 +80,9 @@ const activeStyle = {
 
 type SideDrawerProps = {
   drawerWidth: number;
-}
+};
 
-function SideDrawer({drawerWidth} : SideDrawerProps) {
+function SideDrawer({ drawerWidth }: SideDrawerProps) {
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -113,7 +113,11 @@ function SideDrawer({drawerWidth} : SideDrawerProps) {
           borderColor: "divider",
         }}
       >
-        <Avatar sx={{ bgcolor: deepPurple[500] }}>DP</Avatar>
+        <Avatar
+          sx={{ bgcolor: deepPurple[500] }}
+          src={""}
+          alt="avatar"
+        />
         <Typography variant="h5">Denis Pop</Typography>
       </Stack>
 
