@@ -1,4 +1,3 @@
-import * as React from "react";
 import Avatar from "@mui/material/Avatar";
 import Button from "@mui/material/Button";
 import CssBaseline from "@mui/material/CssBaseline";
@@ -10,21 +9,48 @@ import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
 import { useNavigate } from "react-router-dom";
+import { useSnackBarStore } from "../state/snackBarStore";
+import { useApiStore } from "../state/apiStore";
+import { useState } from "react";
 
 const SIGN_IN = "/sign-in";
-const VERIFY_EMAIL = '/verify-email';
 
 function SignUp() {
-  const navigate = useNavigate();
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    console.log({
-      email: data.get("email"),
-      password: data.get("password"),
-    });
-    navigate(VERIFY_EMAIL);
+  const navigate = useNavigate();
+  const { setOpenAlert, setAlertText } = useSnackBarStore();
+  const { createUser } = useApiStore();
+
+  const handleSubmit = async (
+    firstName: string,
+    lastName: string,
+    email: string,
+    password: string
+  ) => {
+    createUser(firstName, lastName, email, password)
+      .then((response) => {
+        if (response.status === 201) {
+          setAlertText("User created successfully, please verify your email");
+          setOpenAlert(true);
+        } else {
+          setAlertText("Error creating user");
+          setOpenAlert(true);
+        }
+      })
+      .catch((error) => {
+        if (!error.response) {
+          setAlertText("Network error");
+          setOpenAlert(true);
+          return;
+        }
+
+        setAlertText("Error creating user: " + error.response.data.message);
+        setOpenAlert(true);
+      });
   };
 
   return (
@@ -44,7 +70,17 @@ function SignUp() {
         <Typography component="h1" variant="h5">
           Sign up
         </Typography>
-        <Box component="form" noValidate onSubmit={handleSubmit} sx={{ mt: 3 }}>
+        <Box
+          component="form"
+          noValidate
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (firstName && lastName && email && password) {
+              handleSubmit(firstName, lastName, email, password);
+            }
+          }}
+          sx={{ mt: 3 }}
+        >
           <Grid container spacing={2}>
             <Grid item xs={12} sm={6}>
               <TextField
@@ -55,6 +91,8 @@ function SignUp() {
                 id="firstName"
                 label="First Name"
                 autoFocus
+                onChange={(e) => setFirstName(e.target.value)}
+                value={firstName}
               />
             </Grid>
             <Grid item xs={12} sm={6}>
@@ -65,6 +103,8 @@ function SignUp() {
                 label="Last Name"
                 name="lastName"
                 autoComplete="family-name"
+                onChange={(e) => setLastName(e.target.value)}
+                value={lastName}
               />
             </Grid>
             <Grid item xs={12}>
@@ -75,6 +115,8 @@ function SignUp() {
                 label="Email Address"
                 name="email"
                 autoComplete="email"
+                onChange={(e) => setEmail(e.target.value)}
+                value={email}
               />
             </Grid>
             <Grid item xs={12}>
@@ -86,6 +128,8 @@ function SignUp() {
                 type="password"
                 id="password"
                 autoComplete="new-password"
+                onChange={(e) => setPassword(e.target.value)}
+                value={password}
               />
             </Grid>
           </Grid>

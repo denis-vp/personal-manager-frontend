@@ -10,7 +10,7 @@ import AlertSnackBar from "./components/AlertSnackBar";
 import { useSnackBarStore } from "./state/snackBarStore";
 import SignIn from "./pages/SignIn";
 import SignUp from "./pages/SignUp";
-import VerifyEmail from "./pages/VerifyEmail";
+import EmailVerification from "./pages/EmailVerification";
 
 const theme = createTheme({});
 
@@ -28,8 +28,8 @@ const router = createBrowserRouter([
     element: <SignUp />,
   },
   {
-    path: "/verify-email",
-    element: <VerifyEmail />,
+    path: "/verify",
+    element: <EmailVerification />,
   },
   {
     path: "/dashboard",

@@ -19,6 +19,7 @@ import Avatar from "@mui/material/Avatar/Avatar";
 import Typography from "@mui/material/Typography/Typography";
 import { deepPurple } from "@mui/material/colors";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useUserStore } from "../state/userStore";
 
 const drawerItems1 = [
   {
@@ -85,6 +86,7 @@ type SideDrawerProps = {
 function SideDrawer({ drawerWidth }: SideDrawerProps) {
   const navigate = useNavigate();
   const location = useLocation();
+  const { user } = useUserStore();
 
   return (
     <Drawer
@@ -118,7 +120,7 @@ function SideDrawer({ drawerWidth }: SideDrawerProps) {
           src={""}
           alt="avatar"
         />
-        <Typography variant="h5">Denis Pop</Typography>
+        <Typography variant="h5">{user?.firstName} {user?.lastName}</Typography>
       </Stack>
 
       <List>
